@@ -3,27 +3,21 @@ package com.yz.mdm
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.os.SystemClock
 import android.provider.Settings
 import android.text.InputType
-import android.view.Gravity
-import android.view.ViewGroup
-import android.widget.Button
+import android.webkit.JavascriptInterface
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 
 class MainActivity : Activity() {
-    private lateinit var status: TextView
-    private lateinit var musicBtn: Button
     private var taps = 0
     private var lastTap = 0L
-
-    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,80 +27,79 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        refresh()
         if (Policy.isOwner(this) && !Kiosk.suspended) {
             val am = getSystemService(ActivityManager::class.java)
-            if (am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) runCatching { startLockTask() }
+            if (am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) {
+                runCatching { startLockTask() }
+            }
         }
     }
 
-    private fun buildUi(): LinearLayout {
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setBackgroundColor(Color.parseColor("#101418"))
-            setPadding(dp(24), dp(24), dp(24), dp(24))
-        }
-        val title = TextView(this).apply {
-            text = "YZ"
-            textSize = 44f
-            setTextColor(Color.WHITE)
-            gravity = Gravity.CENTER
-            setOnClickListener { onTitleTap() }
-        }
-        musicBtn = bigButton("♫  Musique") { openZemer() }
-        val settingsBtn = bigButton("⚙  Réglages") { openSettings() }
-        status = TextView(this).apply {
-            textSize = 14f
-            setTextColor(Color.parseColor("#9AA5B1"))
-            gravity = Gravity.CENTER
-        }
-        root.addView(title)
-        root.addView(musicBtn, buttonParams())
-        root.addView(settingsBtn, buttonParams())
-        root.addView(status, buttonParams())
-        return root
-    }
-
-    private fun bigButton(label: String, onClick: () -> Unit) = Button(this).apply {
-        text = label
-        textSize = 24f
-        isAllCaps = false
-        setPadding(dp(16), dp(28), dp(16), dp(28))
-        setOnClickListener { onClick() }
-    }
-
-    private fun buttonParams() = LinearLayout.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-    ).apply { topMargin = dp(20) }
-
-    private fun refresh() {
-        val zemer = Config.ZEMER_PACKAGES.firstOrNull { Policy.isInstalled(this, it) }
-        musicBtn.isEnabled = zemer != null
-        status.text = buildString {
-            append(if (Policy.isOwner(this@MainActivity)) "Appareil géré : oui" else "Appareil géré : NON (lancez scripts/setup.sh)")
-            append("\n")
-            append(if (zemer != null) "Zemer : installé" else "Zemer : non installé")
-        }
+    @Suppress("SetJavaScriptEnabled")
+    private fun buildUi() = WebView(this).apply {
+        setBackgroundColor(android.graphics.Color.rgb(8, 8, 11))
+        settings.javaScriptEnabled = true
+        settings.domStorageEnabled = true
+        settings.allowFileAccess = true
+        webViewClient = WebViewClient()
+        addJavascriptInterface(WebBridge(), "YZMDM")
+        loadUrl("file:///android_asset/index.html")
     }
 
     private fun openZemer() {
-        val pkg = Config.ZEMER_PACKAGES.firstOrNull { Policy.isInstalled(this, it) } ?: return
-        packageManager.getLaunchIntentForPackage(pkg)?.let { startActivity(it) }
+        val launchIntent = Config.ZEMER_PACKAGES
+            .mapNotNull { packageManager.getLaunchIntentForPackage(it) }
+            .firstOrNull()
+        if (launchIntent == null) {
+            toast("Installe d’abord Zemer sur cet appareil")
+            return
+        }
+        startActivity(launchIntent)
+    }
+
+    private fun openWaze() {
+        val launchIntent = packageManager.getLaunchIntentForPackage(Config.WAZE_PACKAGE)
+        if (launchIntent == null) {
+            toast("Waze n’est pas installé sur cet appareil")
+            return
+        }
+        startActivity(launchIntent)
+    }
+
+    private fun openBluetoothSettings() {
+        try {
+            startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+        } catch (_: ActivityNotFoundException) {
+            openSettings()
+        }
+    }
+
+    private fun openSoundSettings() {
+        try {
+            startActivity(Intent(Settings.ACTION_SOUND_SETTINGS))
+        } catch (_: ActivityNotFoundException) {
+            openSettings()
+        }
     }
 
     private fun openSettings() {
-        runCatching { startActivity(Intent(Settings.ACTION_SETTINGS)) }
-            .onFailure { toast("Réglages indisponibles") }
+        try {
+            startActivity(Intent(Settings.ACTION_SETTINGS))
+        } catch (_: ActivityNotFoundException) {
+            toast("Réglages indisponibles")
+        }
     }
 
-    // ---- Accès administrateur : 7 appuis sur "YZ" puis code ----
+    // ---- Accès administrateur : 7 appuis sur le titre Zemer dans le tiroir ----
 
     private fun onTitleTap() {
         val now = SystemClock.elapsedRealtime()
         taps = if (now - lastTap > 3000) 1 else taps + 1
         lastTap = now
-        if (taps >= 7) { taps = 0; askPin() }
+        if (taps >= 7) {
+            taps = 0
+            askPin()
+        }
     }
 
     private fun askPin() {
@@ -119,11 +112,14 @@ class MainActivity : Activity() {
             .setTitle(if (hasPin) "Code administrateur" else "Créer le code administrateur")
             .setView(input)
             .setPositiveButton("OK") { _, _ ->
-                val p = input.text.toString()
+                val pin = input.text.toString()
                 when {
-                    !hasPin && p.length >= 4 -> { Pin.set(this, p); adminMenu() }
+                    !hasPin && pin.length >= 4 -> {
+                        Pin.set(this, pin)
+                        adminMenu()
+                    }
                     !hasPin -> toast("4 chiffres minimum")
-                    Pin.check(this, p) -> adminMenu()
+                    Pin.check(this, pin) -> adminMenu()
                     else -> toast("Code incorrect")
                 }
             }
@@ -134,16 +130,28 @@ class MainActivity : Activity() {
     private fun adminMenu() {
         val items = arrayOf(
             "Réappliquer la politique et reprendre le kiosque",
-            "Quitter le kiosque (jusqu'à la prochaine réappli.)",
-            "Mode maintenance (autoriser installations adb)",
+            "Quitter le kiosque (jusqu’à la prochaine réapplication)",
+            "Mode maintenance (autoriser les installations ADB)",
             "Retirer le Device Owner (tout débloquer)",
             "Fermer",
         )
-        AlertDialog.Builder(this).setTitle("Administration YZ").setItems(items) { _, which ->
+        AlertDialog.Builder(this).setTitle("Administration YiDream").setItems(items) { _, which ->
             when (which) {
-                0 -> { Kiosk.suspended = false; Policy.apply(this); onResume(); toast("Politique appliquée") }
-                1 -> { Kiosk.suspended = true; runCatching { stopLockTask() }; toast("Kiosque suspendu") }
-                2 -> { Policy.maintenance(this); toast("Installations autorisées") }
+                0 -> {
+                    Kiosk.suspended = false
+                    Policy.apply(this)
+                    onResume()
+                    toast("Politique appliquée")
+                }
+                1 -> {
+                    Kiosk.suspended = true
+                    runCatching { stopLockTask() }
+                    toast("Kiosque suspendu")
+                }
+                2 -> {
+                    Policy.maintenance(this)
+                    toast("Installations autorisées")
+                }
                 3 -> confirmRelease()
             }
         }.show()
@@ -152,17 +160,42 @@ class MainActivity : Activity() {
     private fun confirmRelease() {
         AlertDialog.Builder(this)
             .setTitle("Retirer le Device Owner ?")
-            .setMessage("Toutes les restrictions seront levées et YZ ne gèrera plus l'appareil.")
+            .setMessage("Toutes les restrictions seront levées et YiDream cessera de gérer l’appareil.")
             .setPositiveButton("Retirer") { _, _ ->
                 Kiosk.suspended = true
                 runCatching { stopLockTask() }
                 Policy.release(this)
-                refresh()
                 toast("Device Owner retiré")
             }
             .setNegativeButton("Annuler", null)
             .show()
     }
 
-    private fun toast(s: String) = Toast.makeText(this, s, Toast.LENGTH_SHORT).show()
+    inner class WebBridge {
+        @JavascriptInterface
+        fun openZemer() = runOnUiThread { this@MainActivity.openZemer() }
+
+        @JavascriptInterface
+        fun openWaze() = runOnUiThread { this@MainActivity.openWaze() }
+
+        @JavascriptInterface
+        fun openBluetoothSettings() = runOnUiThread { this@MainActivity.openBluetoothSettings() }
+
+        @JavascriptInterface
+        fun openSoundSettings() = runOnUiThread { this@MainActivity.openSoundSettings() }
+
+        @JavascriptInterface
+        fun openSettings() = runOnUiThread { this@MainActivity.openSettings() }
+
+        @JavascriptInterface
+        fun adminTap() = runOnUiThread { onTitleTap() }
+
+        @JavascriptInterface
+        fun submitExitCode(code: String) = runOnUiThread {
+            // The once-a-day YiDream web verifier is not configured yet; never treat a typed code as valid.
+            toast("La validation du code quotidien n’est pas encore connectée")
+        }
+    }
+
+    private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
