@@ -41,7 +41,8 @@ object Policy {
             ?.activityInfo?.packageName ?: "com.android.settings"
 
     fun allowedPackages(c: Context): List<String> =
-        (listOf(c.packageName, settingsPackage(c)) + Config.ZEMER_PACKAGES + Config.EXTRA_ALLOWED_PACKAGES).distinct()
+        (listOf(c.packageName, settingsPackage(c)) + Config.ZEMER_PACKAGES +
+            listOf(Config.WAZE_PACKAGE).filter { isInstalled(c, it) } + Config.EXTRA_ALLOWED_PACKAGES).distinct()
 
     /** Applique toute la politique. Sans effet si l'app n'est pas Device Owner. */
     fun apply(c: Context): Boolean {
