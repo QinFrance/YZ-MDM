@@ -1,0 +1,79 @@
+name: Signed Android APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish signed APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.9
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Configure signing key
+        working-directory: yz-mdm
+        env:
+          KEYSTORE_BASE64: ${{ secrets.YZMDM_SIGNING_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.YZMDM_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.YZMDM_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.YZMDM_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${KEYSTORE_BASE64:?Add the YZMDM_SIGNING_KEYSTORE_BASE64 repository secret}"
+          : "${STORE_PASSWORD:?Add the YZMDM_STORE_PASSWORD repository secret}"
+          : "${KEY_ALIAS:?Add the YZMDM_KEY_ALIAS repository secret}"
+          : "${KEY_PASSWORD:?Add the YZMDM_KEY_PASSWORD repository secret}"
+          mkdir -p app/keystore
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release.p12
+          test -s app/keystore/release.p12
+
+      - name: Read app version
+        id: version
+        working-directory: yz-mdm
+        run: |
+          version="$(sed -nE 's/.*versionName = "([^"]+)".*/\1/p' app/build.gradle.kts | head -n 1)"
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build signed release
+        working-directory: yz-mdm
+        env:
+          YZMDM_SIGNING_STORE_FILE: app/keystore/release.p12
+          YZMDM_STORE_PASSWORD: ${{ secrets.YZMDM_STORE_PASSWORD }}
+          YZMDM_KEY_ALIAS: ${{ secrets.YZMDM_KEY_ALIAS }}
+          YZMDM_KEY_PASSWORD: ${{ secrets.YZMDM_KEY_PASSWORD }}
+        run: gradle :app:assembleRelease --no-daemon
+
+      - name: Save APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yidream-release-v${{ steps.version.outputs.version }}
+          path: yz-mdm/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: YiDream v${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          make_latest: true
+          files: yz-mdm/app/build/outputs/apk/release/app-release.apk
