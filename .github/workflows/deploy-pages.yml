@@ -86,8 +86,8 @@ jobs:
           else
             ready=false
           fi
-          version_name="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*=[[:space:]]*"\\([^"]*\\)".*/\\1/p' yz-mdm/app/build.gradle.kts | head -n1)"
-          version_code="$(sed -n 's/^[[:space:]]*versionCode[[:space:]]*=[[:space:]]*\\([0-9][0-9]*\\).*/\\1/p' yz-mdm/app/build.gradle.kts | head -n1)"
+          version_name="$(grep -Eo 'versionName[[:space:]]*=[[:space:]]*"[^"]+"' yz-mdm/app/build.gradle.kts | cut -d '"' -f2 | head -n1)"
+          version_code="$(grep -Eo 'versionCode[[:space:]]*=[[:space:]]*[0-9]+' yz-mdm/app/build.gradle.kts | grep -Eo '[0-9]+' | head -n1)"
           if [[ -z "$version_name" || -z "$version_code" ]]; then
             echo "::error::Could not read the Android version from Gradle."
             exit 1
