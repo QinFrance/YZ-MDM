@@ -19,8 +19,8 @@ android {
         applicationId = "com.yz.mdm"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "0.2.4"
+        versionCode = 7
+        versionName = "0.2.5"
     }
 
     signingConfigs {
