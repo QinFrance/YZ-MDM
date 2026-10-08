@@ -7,34 +7,30 @@
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="9"
+        android:strokeWidth="6.8"
         android:strokeLineCap="round"
-        android:pathData="M22,28 L63,28" />
+        android:strokeLineJoin="round"
+        android:pathData="M27.8,30.1 L44.3,50.2 L44.3,71.8 M61.4,30.1 L44.3,50.2" />
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="9"
+        android:strokeWidth="6.1"
         android:strokeLineCap="round"
-        android:pathData="M63,28 L22,73" />
+        android:strokeLineJoin="round"
+        android:pathData="M61.4,30.1 H83.2 L62.4,63.9 H83.2" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M73.7,72.8 L83.8,69.6 V72.6 L73.7,75.9 Z" />
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="9"
+        android:strokeWidth="2.7"
         android:strokeLineCap="round"
-        android:pathData="M22,73 L63,73" />
+        android:pathData="M73.7,73.8 V82.1 M83.8,70.0 V78.3" />
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M72.6,58 L83.3,55.1 L83.3,58.3 L72.6,61.2 Z" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:pathData="M72.6,59.5 L72.6,74.5 M83.3,57.3 L83.3,69.6" />
+        android:pathData="M70.9,79.6 C73.5,79.6 75.3,80.9 75.3,82.6 C75.3,84.3 73.5,85.6 70.9,85.6 C68.3,85.6 66.6,84.3 66.6,82.6 C66.6,80.9 68.3,79.6 70.9,79.6 Z" />
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M69.4,75.3 C72.2,75.3 74.3,76.7 74.3,78.5 C74.3,80.3 72.2,81.8 69.4,81.8 C66.6,81.8 64.5,80.3 64.5,78.5 C64.5,76.7 66.6,75.3 69.4,75.3 Z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M80.2,69.2 C82.9,69.2 85,70.7 85,72.6 C85,74.4 82.9,75.9 80.2,75.9 C77.5,75.9 75.3,74.4 75.3,72.6 C75.3,70.7 77.5,69.2 80.2,69.2 Z" />
+        android:pathData="M80.4,76.4 C83.0,76.4 84.8,77.7 84.8,79.4 C84.8,81.1 83.0,82.5 80.4,82.5 C77.8,82.5 76.0,81.1 76.0,79.4 C76.0,77.7 77.8,76.4 80.4,76.4 Z" />
 </vector>
