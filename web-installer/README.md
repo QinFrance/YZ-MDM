@@ -26,7 +26,7 @@ Ne placez jamais la clé privée dans le dépôt. Ajoutez ces secrets dans **Set
 - `YZMDM_KEY_ALIAS`
 - `YZMDM_KEY_PASSWORD`
 
-La même clé doit signer toutes les versions futures, sinon Android refusera une mise à jour par-dessus l’APK existant. Après l’ajout des quatre secrets, relancez **Build and publish YZ MDM WebADB**. La page proposera alors le téléchargement de la release signée dans `downloads/yz-mdm.apk`.
+La même clé doit signer toutes les versions futures, sinon Android refusera une mise à jour par-dessus l’APK existant. Après l’ajout des quatre secrets, le workflow **Build and publish YZ MDM WebADB** démarre automatiquement au prochain changement dans `web-installer/` ou `yz-mdm/`. Il compile alors la release signée et la publie dans `downloads/yz-mdm.apk`, que l’installateur charge depuis le site. Les versions suivantes suivent le même processus.
 
 ## Développement
 Le site est compilé avec Vite et les bibliothèques WebADB de Yume-chan. `npm ci && npm run build` dans `web-installer`.
