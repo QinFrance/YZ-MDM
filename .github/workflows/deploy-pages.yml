@@ -86,11 +86,17 @@ jobs:
           else
             ready=false
           fi
+          version_name="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*=[[:space:]]*"\\([^"]*\\)".*/\\1/p' yz-mdm/app/build.gradle.kts | head -n1)"
+          version_code="$(sed -n 's/^[[:space:]]*versionCode[[:space:]]*=[[:space:]]*\\([0-9][0-9]*\\).*/\\1/p' yz-mdm/app/build.gradle.kts | head -n1)"
+          if [[ -z "$version_name" || -z "$version_code" ]]; then
+            echo "::error::Could not read the Android version from Gradle."
+            exit 1
+          fi
           cat > web-installer/dist/build-info.json <<JSON
           {
             "applicationId": "com.yz.mdm",
-            "versionName": "0.2.0",
-            "versionCode": 2,
+            "versionName": "$version_name",
+            "versionCode": $version_code,
             "releaseReady": $ready
           }
           JSON
