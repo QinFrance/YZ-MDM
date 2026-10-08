@@ -4,6 +4,7 @@ package com.yz.mdm
 object Config {
     /** Paquet(s) de l'app de musique autorisée (Zemer officiel : com.jtech.zemer). */
     val ZEMER_PACKAGES = listOf("com.jtech.zemer")
+    const val WAZE_PACKAGE = "com.waze"
 
     /** Autres paquets à autoriser en kiosque (ex. un service Wi-Fi propre à un constructeur). */
     val EXTRA_ALLOWED_PACKAGES = listOf<String>()

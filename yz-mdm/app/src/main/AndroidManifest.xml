@@ -4,6 +4,7 @@
     <!-- Nécessaire depuis Android 11 pour voir/lancer les autres apps -->
     <queries>
         <package android:name="com.jtech.zemer" />
+        <package android:name="com.waze" />
         <intent>
             <action android:name="android.settings.SETTINGS" />
         </intent>
