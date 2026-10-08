@@ -47,6 +47,7 @@ const STRINGS = {
     permission: 'Autorisez le débogage USB sur le téléphone, puis réessayez.',
     steps: 'Activez les options développeur et le débogage USB, branchez un câble de données et acceptez l’empreinte RSA.',
     statusCurrent: 'Installée · conservée',
+    updateAvailable: 'Mise à jour disponible',
     statusMissing: 'Absente · à installer',
     statusUnselected: 'Non sélectionnée',
     statusNeedsPlay: 'Absente · Google Play',
@@ -90,6 +91,7 @@ const STRINGS = {
     permission: 'Approve USB debugging on the phone, then try again.',
     steps: 'Enable Developer options and USB debugging, use a data-capable cable, and approve the RSA fingerprint.',
     statusCurrent: 'Installed · kept',
+    updateAvailable: 'Update available',
     statusMissing: 'Missing · to install',
     statusUnselected: 'Not selected',
     statusNeedsPlay: 'Missing · Google Play',
@@ -133,6 +135,7 @@ const STRINGS = {
     permission: 'אשרו ניפוי באגים ב‑USB בטלפון ונסו שוב.',
     steps: 'הפעילו אפשרויות מפתחים וניפוי באגים ב‑USB, השתמשו בכבל נתונים ואשרו את טביעת RSA.',
     statusCurrent: 'מותקנת · נשארת',
+    updateAvailable: 'עדכון זמין',
     statusMissing: 'חסרה · להתקנה',
     statusUnselected: 'לא נבחרה',
     statusNeedsPlay: 'חסרה · Google Play',
@@ -176,6 +179,7 @@ const STRINGS = {
     permission: 'דערלויבט USB-דעבאַגינג אויפֿן טעלעפֿאָן און פּרוּווט ווידער.',
     steps: 'אַקטיווירט Developer options און USB-דעבאַגינג, ניצט אַ דאַטן־קאַבל און באַשטעטיקט די RSA פֿינגער־אָפּדרוק.',
     statusCurrent: 'אינסטאַלירט · בלײַבט',
+    updateAvailable: 'אַ דערהייַנטיקונג איז בנימצא',
     statusMissing: 'פֿעלט · אינסטאַלירן',
     statusUnselected: 'נישט אויסגעקליבן',
     statusNeedsPlay: 'פֿעלט · Google Play',
@@ -271,7 +275,10 @@ class YZWebAdb {
 
   async appVersion(pkg) {
     const result = await this.sh(['dumpsys', 'package', pkg]);
-    return result.out.match(/versionName=([^\s]+)/)?.[1] || '';
+    return {
+      name: result.out.match(/versionName=([^\s]+)/)?.[1] || '',
+      code: Number(result.out.match(/versionCode=(\d+)/)?.[1] || 0),
+    };
   }
 
   async installApk(file) {
@@ -353,6 +360,12 @@ function updateButtons() {
   el('ownerBtn').disabled = !adb.adb || !appState?.launcher?.installed;
 }
 
+function needsLauncherUpdate() {
+  return Boolean(appState?.launcher?.installed && buildInfo.releaseReady &&
+    buildInfo.versionCode && appState.launcher.versionCode &&
+    appState.launcher.versionCode < Number(buildInfo.versionCode));
+}
+
 function renderStatuses() {
   if (!appState) return;
   for (const id of ['launcher', 'zemer', 'waze', 'pulsar']) {
@@ -361,6 +374,9 @@ function renderStatuses() {
     if (!isSelected) {
       status.textContent = msg('statusUnselected');
       status.className = 'result';
+    } else if (id === 'launcher' && needsLauncherUpdate()) {
+      status.textContent = `${msg('updateAvailable')} · v${appState.launcher.version || appState.launcher.versionCode} → v${buildInfo.versionName}`;
+      status.className = 'result warn';
     } else if (appState[id]?.installed) {
       const version = appState[id]?.version ? ` · v${appState[id].version}` : '';
       status.textContent = `${msg('statusCurrent')}${version}`;
@@ -379,7 +395,7 @@ function renderStatuses() {
 function showFileOptions() {
   const selected = selectedApps();
   const showFor = {
-    launcher: !appState?.launcher?.installed && !buildInfo.releaseReady,
+    launcher: (!appState?.launcher?.installed || needsLauncherUpdate()) && !buildInfo.releaseReady,
     zemer: selected.zemer && !appState?.zemer?.installed,
     waze: selected.waze && !appState?.waze?.installed,
     pulsar: selected.pulsar && !appState?.pulsar?.installed,
@@ -404,7 +420,8 @@ async function checkApps() {
   setStatus(msg('checking'));
   const entries = await Promise.all(Object.entries(APP).map(async ([id, app]) => {
     const installed = await adb.isInstalled(app.package);
-    return [id, { installed, version: installed ? await adb.appVersion(app.package) : '' }];
+    const version = installed ? await adb.appVersion(app.package) : { name: '', code: 0 };
+    return [id, { installed, version: version.name, versionCode: version.code }];
   }));
   appState = Object.fromEntries(entries);
   window.webAdbHasCheck = true;
@@ -455,8 +472,8 @@ async function installSelected() {
   if (!adb.adb || !appState) throw new Error('NOT_CONNECTED');
   const selection = selectedApps();
   const list = ['zemer', 'waze', 'pulsar'].filter((id) => selection[id] && !appState[id].installed);
-  const launcherMissing = !appState.launcher.installed;
-  if (launcherMissing && !buildInfo.releaseReady && !el('file-launcher').files[0]) {
+  const launcherNeedsInstall = !appState.launcher.installed || needsLauncherUpdate();
+  if (launcherNeedsInstall && !buildInfo.releaseReady && !el('file-launcher').files[0]) {
     showFileOptions();
     throw new Error('LAUNCHER_NOT_READY');
   }
@@ -485,7 +502,7 @@ async function installSelected() {
       failed.push({ id, error });
     }
   }
-  if (launcherMissing) {
+  if (launcherNeedsInstall) {
     try {
       const file = await getLauncherApk();
       await installOne('launcher', file);
@@ -615,7 +632,7 @@ async function loadBuildInfo() {
   }
   if (!YZWebAdb.supported) setStatus(msg('unsupported'), 'warn');
   else if (!buildInfo.releaseReady) el('actionNote').textContent = msg('launcherSigning');
-  if (window.webAdbHasCheck) showFileOptions();
+  if (window.webAdbHasCheck) { renderStatuses(); showFileOptions(); }
 }
 
 window.webAdbConnected = false;
