@@ -5,6 +5,7 @@
     <queries>
         <package android:name="com.jtech.zemer" />
         <package android:name="com.waze" />
+        <package android:name="com.rhmsoft.pulsar" />
         <intent>
             <action android:name="android.settings.SETTINGS" />
         </intent>
@@ -12,7 +13,7 @@
 
     <application
         android:allowBackup="false"
-        android:label="YZ"
+        android:label="YiDream"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
 
         <!-- Launcher (HOME) + point d'entrée du kiosque -->

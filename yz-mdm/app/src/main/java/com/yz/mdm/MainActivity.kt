@@ -46,25 +46,22 @@ class MainActivity : Activity() {
         loadUrl("file:///android_asset/index.html")
     }
 
-    private fun openZemer() {
-        val launchIntent = Config.ZEMER_PACKAGES
-            .mapNotNull { packageManager.getLaunchIntentForPackage(it) }
-            .firstOrNull()
-        if (launchIntent == null) {
-            toast("Installe d’abord Zemer sur cet appareil")
+    private fun openPackage(pkg: String, appName: String) {
+        val intent = packageManager.getLaunchIntentForPackage(pkg)
+        if (intent == null) {
+            toast("Installe d’abord $appName sur cet appareil")
             return
         }
-        startActivity(launchIntent)
+        try {
+            startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            toast("$appName ne peut pas être ouvert")
+        }
     }
 
-    private fun openWaze() {
-        val launchIntent = packageManager.getLaunchIntentForPackage(Config.WAZE_PACKAGE)
-        if (launchIntent == null) {
-            toast("Waze n’est pas installé sur cet appareil")
-            return
-        }
-        startActivity(launchIntent)
-    }
+    private fun openZemer() = openPackage(Config.ZEMER_PACKAGES.first(), "Zemer")
+    private fun openWaze() = openPackage(Config.WAZE_PACKAGE, "Waze")
+    private fun openPulsar() = openPackage(Config.PULSAR_PACKAGE, "Pulsar")
 
     private fun openBluetoothSettings() {
         try {
@@ -90,7 +87,7 @@ class MainActivity : Activity() {
         }
     }
 
-    // ---- Accès administrateur : 7 appuis sur le titre Zemer dans le tiroir ----
+    // ---- Accès administrateur : 7 appuis sur le titre YiDream dans le tiroir ----
 
     private fun onTitleTap() {
         val now = SystemClock.elapsedRealtime()
@@ -179,6 +176,9 @@ class MainActivity : Activity() {
         fun openWaze() = runOnUiThread { this@MainActivity.openWaze() }
 
         @JavascriptInterface
+        fun openPulsar() = runOnUiThread { this@MainActivity.openPulsar() }
+
+        @JavascriptInterface
         fun openBluetoothSettings() = runOnUiThread { this@MainActivity.openBluetoothSettings() }
 
         @JavascriptInterface
@@ -192,7 +192,6 @@ class MainActivity : Activity() {
 
         @JavascriptInterface
         fun submitExitCode(code: String) = runOnUiThread {
-            // The once-a-day YiDream web verifier is not configured yet; never treat a typed code as valid.
             toast("La validation du code quotidien n’est pas encore connectée")
         }
     }

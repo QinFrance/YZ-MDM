@@ -1,10 +1,11 @@
-name: Publish Web ADB on GitHub Pages
+name: Build and publish YZ MDM WebADB
 
 on:
   push:
     branches: [main, master]
     paths:
       - 'web-installer/**'
+      - 'yz-mdm/**'
       - '.github/workflows/deploy-pages.yml'
       - 'README.md'
   workflow_dispatch: {}
@@ -21,20 +22,83 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      YZMDM_KEYSTORE_BASE64: ${{ secrets.YZMDM_SIGNING_KEYSTORE_BASE64 }}
+      YZMDM_STORE_PASSWORD: ${{ secrets.YZMDM_STORE_PASSWORD }}
+      YZMDM_KEY_ALIAS: ${{ secrets.YZMDM_KEY_ALIAS }}
+      YZMDM_KEY_PASSWORD: ${{ secrets.YZMDM_KEY_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-      - name: Prepare Web ADB site
+      - name: Configure Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Configure Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.9
+      - name: Prepare signed APK when release credentials are configured
+        id: signing
+        shell: bash
         run: |
-          mkdir -p _site
-          cp -R web-installer/. _site/
-          touch _site/.nojekyll
+          set -euo pipefail
+          count=0
+          for value in "$YZMDM_KEYSTORE_BASE64" "$YZMDM_STORE_PASSWORD" "$YZMDM_KEY_ALIAS" "$YZMDM_KEY_PASSWORD"; do
+            if [[ -n "$value" ]]; then count=$((count + 1)); fi
+          done
+          if [[ "$count" -eq 4 ]]; then
+            printf '%s' "$YZMDM_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/yz-mdm-release.jks"
+            echo "release_ready=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$count" -eq 0 ]]; then
+            echo "release_ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No release signing secrets are configured. The live WebADB will publish without a downloadable production APK."
+          else
+            echo "::error::Configure all four YZMDM signing secrets together."
+            exit 1
+          fi
+      - name: Build signed Android release
+        if: steps.signing.outputs.release_ready == 'true'
+        working-directory: yz-mdm
+        env:
+          YZMDM_SIGNING_STORE_FILE: ${{ runner.temp }}/yz-mdm-release.jks
+        run: gradle :app:assembleRelease --no-daemon
+      - name: Build WebADB
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web-installer/package-lock.json
+      - name: Compile website
+        working-directory: web-installer
+        run: |
+          npm ci
+          npm run build
+      - name: Prepare Pages files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p web-installer/dist/downloads
+          if [[ "${{ steps.signing.outputs.release_ready }}" == "true" ]]; then
+            cp yz-mdm/app/build/outputs/apk/release/app-release.apk web-installer/dist/downloads/yz-mdm.apk
+            ready=true
+          else
+            ready=false
+          fi
+          cat > web-installer/dist/build-info.json <<JSON
+          {
+            "applicationId": "com.yz.mdm",
+            "versionName": "0.2.0",
+            "versionCode": 2,
+            "releaseReady": $ready
+          }
+          JSON
+          touch web-installer/dist/.nojekyll
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: web-installer/dist
 
   deploy:
     environment:

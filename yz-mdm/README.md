@@ -1,51 +1,25 @@
-# YZ MDM
+# YiDream / YZ MDM
 
-Side project. **Un seul APK** qui est à la fois :
-- le **launcher** (activité HOME) de l'appareil,
-- le **Device Owner** (DPC / mini-MDM),
-- un **kiosque** qui n'autorise que **Zemer** (`com.jtech.zemer`) et **Réglages**.
+Cette application Android combine le launcher YiDream et un contrôleur Device Owner (DPC). Elle n’intègre pas les applications de musique externes.
 
-L'app de musique n'est pas incluse : on utilise l'APK Zemer officiel (GPL-3.0, https://github.com/ZemerTeam/zemer-app). Aucun code Zemer n'est dans ce dépôt.
-Zemer dépend des serveurs de l'équipe Zemer : prévenez-les si le projet grossit.
+## Launcher
+- Zemer officiel : `com.jtech.zemer`
+- Waze : `com.waze`
+- Pulsar : `com.rhmsoft.pulsar`
+- Réglages Android et raccourci Bluetooth
+- Mode voiture adaptatif selon l’orientation du téléphone
 
-## Interface
+Pulsar et Waze ne peuvent être ouverts que s’ils sont installés. Ils sont inclus dans la liste du kiosque uniquement quand ils existent sur l’appareil.
 
-L'écran d'accueil reprend la maquette YiDream en HTML embarqué dans l'APK (aucun accès réseau requis pour ses icônes). Les raccourcis ouvrent l'application Zemer existante, Waze et les écrans système Bluetooth/son. Zemer reste une application distincte afin de conserver son paquet officiel et ses données.
+## Politique kiosque
+La politique Device Owner autorise YiDream, les Réglages, Zemer, et Waze/Pulsar s’ils sont installés. Elle désactive la réinitialisation, l’installation et la désinstallation depuis l’interface Android, et fixe YiDream comme launcher par défaut. Le débogage USB reste activé pour autoriser les opérations WebADB.
 
-Le champ de code de sortie quotidien est un emplacement d'interface : le service YiDream de validation n'est pas encore relié. L'accès administrateur existant reste disponible par sept appuis sur « Zemer » dans le tiroir puis le PIN local.
+L’activation Device Owner est facultative et séparée de l’installation. Android l’autorise généralement seulement sur un appareil neuf/réinitialisé avant d’ajouter un compte. Le site Web affiche cet avertissement et demande une confirmation distincte.
 
-## Ce que fait la politique (`Policy.kt`)
-- Lock task (kiosque) limité à : YZ, Réglages, Zemer et Waze si l'app est installée. Bouton Accueil et notifications autorisés (commandes média). Réglages rapides bloqués.
-- YZ devient le launcher persistant.
-- Restrictions : pas d'installation/désinstallation, pas de sources inconnues, pas de reset d'usine, pas de mode sans échec, pas d'ajout d'utilisateur.
-- Débogage USB laissé actif par défaut (`Config.BLOCK_DEBUGGING`).
-- Écran de verrouillage désactivé, permissions de Zemer accordées automatiquement, arrêt forcé de Zemer bloqué (Android 11+).
-- Pousse des « restrictions d'application » à Zemer (`Config.ZEMER_APP_RESTRICTIONS`). **Le Zemer officiel ne les lit pas encore** : sans fork ou contribution, elles n'ont aucun effet.
+## Compilation et signature
+Le workflow Pages compile le site puis l’APK de release. La release est signée uniquement quand les secrets suivants existent dans les Actions du dépôt : `YZMDM_SIGNING_KEYSTORE_BASE64`, `YZMDM_STORE_PASSWORD`, `YZMDM_KEY_ALIAS` et `YZMDM_KEY_PASSWORD`. Gardez le keystore privé et sauvegardez-le : une même clé est nécessaire pour toutes les mises à jour.
 
-## Compiler
-**Option GitHub** : poussez le dépôt, onglet Actions → `build-apk` → artefact `yz-mdm-debug-apk`.
-**Option locale** : ouvrez le dossier dans Android Studio (génère le wrapper Gradle) puis `Build > Build APK`, ou `gradle :app:assembleDebug` avec JDK 17.
-L'APK est signé avec la clé de debug : suffisant pour un side project.
+Le workflow `build-apk` produit une APK debug pour les essais ; ce fichier n’est pas destiné à la distribution ni aux mises à jour de release.
 
-## Installer sur un appareil
-Conditions : appareil neuf ou réinitialisé, **aucun compte** dessus, un seul utilisateur, débogage USB activé.
-
-    ./scripts/setup.sh app-debug.apk zemer.apk [waze.apk]
-
-Si Waze doit être disponible dans le kiosque, passe aussi son APK en troisième argument pour l'installer avant l'activation du Device Owner.
-
-Puis **tout de suite** : 7 appuis sur « Zemer » dans le tiroir → créer le code administrateur (sinon quelqu'un d'autre peut le créer).
-
-## Menu administrateur (7 appuis sur « Zemer » + code)
-- Réappliquer la politique / reprendre le kiosque
-- Quitter le kiosque
-- Mode maintenance (lève le blocage d'installation pour `adb install -r` d'une mise à jour de Zemer ; « Réappliquer » le remet)
-- Retirer le Device Owner (sinon seule la réinitialisation d'usine le retire)
-
-## Limites connues
-- **Non compilé ni testé sur appareil au moment de la génération** : attendez-vous à corriger quelques erreurs de compilation ou de comportement. Testez sur un téléphone de rechange.
-- Android 8/9 (API 26-27) : pas de réglage fin du kiosque, le bouton Accueil est désactivé en kiosque ; Retour ramène à YiDream.
-- Les constructeurs (Samsung, Xiaomi, Huawei…) ajoutent parfois leurs propres verrous sur le Device Owner et sur les paquets Réglages : ajustez `Config.EXTRA_ALLOWED_PACKAGES` si un écran de Réglages est refusé.
-- Les mises à jour de Zemer se font en mode maintenance + `adb install -r` (pas encore de mise à jour silencieuse intégrée).
-- Zemer a son propre système de mise à jour intégré : sur appareil géré il ne pourra pas installer (restriction), ce qui est voulu.
-- Licence de ce dépôt : à choisir.
+## Installation
+Le site [WebADB YiDream](https://qinfrance.github.io/YZ-MDM/) détecte les paquets, installe la dernière APK officielle de Zemer, permet de choisir un APK local pour Waze/Pulsar, installe la release YiDream lorsqu’elle est disponible, puis peut activer le Device Owner après confirmation.
