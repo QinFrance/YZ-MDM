@@ -2,36 +2,25 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <!-- Y et Z fusionnes au meme sommet; note musicale conservee. -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#F8FAFC"
-        android:strokeWidth="6.8"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M27.8,30.1 L44.3,50.2 L44.3,71.8 M61.4,30.1 L44.3,50.2" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#60A5FA"
-        android:strokeWidth="6.1"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M61.4,30.1 H83.2 L62.4,63.9 H83.2" />
-    <path
-        android:fillColor="#60A5FA"
-        android:pathData="M73.7,72.8 L83.8,69.6 V72.6 L73.7,75.9 Z" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#60A5FA"
-        android:strokeWidth="2.7"
-        android:strokeLineCap="round"
-        android:pathData="M73.7,73.8 V82.1 M83.8,70.0 V78.3" />
-    <path
-        android:fillColor="#60A5FA"
-        android:pathData="M70.9,79.6 C73.5,79.6 75.3,80.9 75.3,82.6 C75.3,84.3 73.5,85.6 70.9,85.6 C68.3,85.6 66.6,84.3 66.6,82.6 C66.6,80.9 68.3,79.6 70.9,79.6 Z" />
-    <path
-        android:fillColor="#60A5FA"
-        android:pathData="M80.4,76.4 C83.0,76.4 84.8,77.7 84.8,79.4 C84.8,81.1 83.0,82.5 80.4,82.5 C77.8,82.5 76.0,81.1 76.0,79.4 C76.0,77.7 77.8,76.4 80.4,76.4 Z" />
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <group
+        android:scaleX="0.85"
+        android:scaleY="0.85"
+        android:pivotX="256"
+        android:pivotY="256">
+        <!-- Y: two-tone branches and stem. -->
+        <path android:fillColor="#00000000" android:strokeColor="#F8FAFC" android:strokeWidth="36" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M128,128 L218,238" />
+        <path android:fillColor="#00000000" android:strokeColor="#60A5FA" android:strokeWidth="36" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M306,128 L218,238 V300" />
+        <path android:fillColor="#00000000" android:strokeColor="#F8FAFC" android:strokeWidth="36" android:strokeLineCap="round" android:pathData="M218,300 V366" />
+        <!-- Z: blue horizontals and a white diagonal, joined to the Y. -->
+        <path android:fillColor="#00000000" android:strokeColor="#60A5FA" android:strokeWidth="32" android:strokeLineCap="round" android:pathData="M306,128 H414" />
+        <path android:fillColor="#00000000" android:strokeColor="#F8FAFC" android:strokeWidth="32" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M414,128 L306,300" />
+        <path android:fillColor="#00000000" android:strokeColor="#60A5FA" android:strokeWidth="32" android:strokeLineCap="round" android:pathData="M306,300 H414" />
+        <!-- Lilac beamed notes. -->
+        <path android:fillColor="#C084FC" android:pathData="M354,354 L412,338 V356 L354,373 Z" />
+        <path android:fillColor="#00000000" android:strokeColor="#C084FC" android:strokeWidth="15" android:strokeLineCap="round" android:pathData="M354,362 V410 M412,344 V392" />
+        <path android:fillColor="#C084FC" android:pathData="M336,397 C350,397 361,404 361,414 C361,424 350,431 336,431 C322,431 311,424 311,414 C311,404 322,397 336,397 Z" />
+        <path android:fillColor="#C084FC" android:pathData="M394,380 C408,380 419,387 419,397 C419,407 408,414 394,414 C380,414 369,407 369,397 C369,387 380,380 394,380 Z" />
+    </group>
 </vector>
