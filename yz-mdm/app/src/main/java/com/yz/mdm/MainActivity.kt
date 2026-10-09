@@ -4,12 +4,17 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.app.AlertDialog
 import android.app.PendingIntent
+import android.Manifest
 import android.app.role.RoleManager
 import android.content.res.Configuration
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.content.Context
 import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
@@ -37,8 +42,10 @@ class MainActivity : Activity() {
     private val updateInProgress = AtomicBoolean(false)
     private val launcherPreferences by lazy { getSharedPreferences("yidream_launcher", MODE_PRIVATE) }
     private var launcherWebView: WebView? = null
+    private var notificationPermissionPending = false
 
     companion object {
+        private const val REQUEST_NOTIFICATION_PERMISSION = 7012
         private const val BUILD_INFO_URL = "https://qinfrance.github.io/YZ-MDM/build-info.json"
         private const val APK_URL = "https://qinfrance.github.io/YZ-MDM/downloads/yz-mdm.apk"
         private const val MAX_APK_BYTES = 300L * 1024L * 1024L
@@ -49,18 +56,65 @@ class MainActivity : Activity() {
         Policy.apply(this)
         setContentView(buildUi())
         applyImmersiveMode()
-        window.decorView.post { maybeOfferHomeLauncher() }
+        UpdateNotificationJob.createNotificationChannel(this)
+        UpdateNotificationJob.schedule(this)
+        UpdateNotificationJob.checkNow(this)
+        window.decorView.post {
+            maybeOfferHomeLauncher()
+            if (intent?.action == UpdateNotificationJob.ACTION_INSTALL_UPDATE) checkForUpdates()
+        }
     }
 
     override fun onResume() {
         super.onResume()
         applyImmersiveMode()
+        if (notificationPermissionPending && hasWindowFocus()) window.decorView.post { requestNotificationPermissionIfNeeded() }
         if (Policy.isOwner(this) && !Kiosk.suspended) {
             val am = getSystemService(ActivityManager::class.java)
             if (am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) {
                 runCatching { startLockTask() }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.action == UpdateNotificationJob.ACTION_INSTALL_UPDATE) checkForUpdates()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_NOTIFICATION_PERMISSION && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+            UpdateNotificationJob.checkNow(this)
+        }
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        notificationPermissionPending = false
+        if (Build.VERSION.SDK_INT < 33 || launcherPreferences.getBoolean("notification_permission_asked", false)) return
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) return
+        launcherPreferences.edit().putBoolean("notification_permission_asked", true).apply()
+        requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_NOTIFICATION_PERMISSION)
+    }
+
+    private fun deviceStatusJson(): String {
+        val battery = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        val rawLevel = battery?.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) ?: -1
+        val scale = battery?.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1) ?: -1
+        val batteryPercent = if (rawLevel >= 0 && scale > 0) (rawLevel * 100f / scale).toInt() else -1
+        val status = battery?.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) ?: -1
+        val charging = status == android.os.BatteryManager.BATTERY_STATUS_CHARGING || status == android.os.BatteryManager.BATTERY_STATUS_FULL
+        val connectivity = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = connectivity.activeNetwork
+        val capabilities = if (activeNetwork != null) connectivity.getNetworkCapabilities(activeNetwork) else null
+        return JSONObject()
+            .put("batteryPercent", batteryPercent)
+            .put("charging", charging)
+            .put("wifi", capabilities?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) == true)
+            .put("mobile", capabilities?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) == true)
+            .put("connected", capabilities?.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) == true)
+            .toString()
     }
 
     @Suppress("SetJavaScriptEnabled")
@@ -128,14 +182,23 @@ class MainActivity : Activity() {
     private fun maybeOfferHomeLauncher() {
         if (Policy.isOwner(this) || isDefaultHomeLauncher() ||
             launcherPreferences.getBoolean("home_launcher_prompt_shown", false)
-        ) return
+        ) {
+            notificationPermissionPending = true
+            window.decorView.post { requestNotificationPermissionIfNeeded() }
+            return
+        }
         launcherPreferences.edit().putBoolean("home_launcher_prompt_shown", true).apply()
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle(homeSetupText("Utiliser YiDream comme écran d’accueil ?", "Use YiDream as your home screen?", "להשתמש ב‑YiDream כמסך הבית?", "YiDream אַלס דײַן היים־עקראַן נוצן?"))
             .setMessage(homeSetupText("YiDream peut remplacer l’écran d’accueil pour réunir musique et navigation. Android te demandera de confirmer ce choix. Tu pourras le modifier dans les paramètres du téléphone.", "YiDream can replace the home screen to keep music and navigation together. Android will ask you to confirm. You can change this later in your phone settings.", "YiDream יכול להחליף את מסך הבית כדי לרכז מוזיקה וניווט. Android יבקש ממך לאשר. אפשר לשנות זאת בהגדרות הטלפון.", "YiDream קען פֿאַרבײַטן דעם היים־עקראַן, כּדי צונויפֿצושטעלן מוזיק און וועגווײַזער. Android וועט בעטן דײַן באַשטעטיקונג. מ׳קען דאָס שפּעטער ענדערן אין די טעלעפֿאָן־אײַנשטעלונגען."))
             .setPositiveButton(homeSetupText("Choisir YiDream", "Choose YiDream", "לבחור ב‑YiDream", "YiDream אויסקלײַבן")) { _, _ -> requestHomeLauncherRole() }
             .setNegativeButton(homeSetupText("Plus tard", "Later", "מאוחר יותר", "שפּעטער"), null)
-            .show()
+            .create()
+        notificationPermissionPending = true
+        dialog.setOnDismissListener {
+            window.decorView.postDelayed({ if (hasWindowFocus()) requestNotificationPermissionIfNeeded() }, 500)
+        }
+        dialog.show()
     }
 
     private fun requestHomeLauncherRole() {
@@ -364,6 +427,20 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun openNotificationSettings() {
+        try {
+            startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName))
+        } catch (_: ActivityNotFoundException) {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+        }
+    }
+
+    private fun setAppLanguage(language: String) {
+        if (language in setOf("en", "fr", "he", "yi")) {
+            launcherPreferences.edit().putString("app_language", language).apply()
+        }
+    }
+
     // ---- Accès administrateur : 7 appuis sur le titre YiDream dans le tiroir ----
 
     private fun onTitleTap() {
@@ -463,6 +540,15 @@ class MainActivity : Activity() {
 
         @JavascriptInterface
         fun checkForUpdates() = runOnUiThread { this@MainActivity.checkForUpdates() }
+
+        @JavascriptInterface
+        fun openNotificationSettings() = runOnUiThread { this@MainActivity.openNotificationSettings() }
+
+        @JavascriptInterface
+        fun setAppLanguage(language: String) = this@MainActivity.setAppLanguage(language)
+
+        @JavascriptInterface
+        fun getDeviceStatus(): String = this@MainActivity.deviceStatusJson()
 
         @JavascriptInterface
         fun openZemer() = runOnUiThread { this@MainActivity.openZemer() }
