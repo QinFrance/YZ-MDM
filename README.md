@@ -2,6 +2,13 @@
 
 YiDream transforme un appareil Android dédié en launcher musical. Ce dépôt contient l’application Android et le site d’installation WebADB.
 
+## Launcher YiDream
+
+- Interface disponible en français, anglais, hébreu et yiddish.
+- Le mode voiture s’active automatiquement quand l’écran passe en paysage.
+- Au premier lancement, YiDream propose de devenir l’écran d’accueil Android ; le choix est confirmé par le système.
+- L’interface utilise le plein écran. Un geste depuis le bord permet d’afficher temporairement les barres système.
+
 ## Installer depuis un navigateur
 
 Ouvrir [https://qinfrance.github.io/YZ-MDM/](https://qinfrance.github.io/YZ-MDM/) dans Chrome, Edge ou Brave, puis :

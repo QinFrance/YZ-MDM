@@ -4,6 +4,11 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.app.AlertDialog
 import android.app.PendingIntent
+import android.app.role.RoleManager
+import android.content.res.Configuration
+import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.content.pm.PackageInfo
 import android.content.pm.PackageInstaller
 import android.net.Uri
@@ -30,6 +35,8 @@ class MainActivity : Activity() {
     private var taps = 0
     private var lastTap = 0L
     private val updateInProgress = AtomicBoolean(false)
+    private val launcherPreferences by lazy { getSharedPreferences("yidream_launcher", MODE_PRIVATE) }
+    private var launcherWebView: WebView? = null
 
     companion object {
         private const val BUILD_INFO_URL = "https://qinfrance.github.io/YZ-MDM/build-info.json"
@@ -41,10 +48,13 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         Policy.apply(this)
         setContentView(buildUi())
+        applyImmersiveMode()
+        window.decorView.post { maybeOfferHomeLauncher() }
     }
 
     override fun onResume() {
         super.onResume()
+        applyImmersiveMode()
         if (Policy.isOwner(this) && !Kiosk.suspended) {
             val am = getSystemService(ActivityManager::class.java)
             if (am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) {
@@ -62,8 +72,96 @@ class MainActivity : Activity() {
         webViewClient = WebViewClient()
         addJavascriptInterface(WebBridge(), "YZMDM")
         loadUrl("file:///android_asset/index.html")
+    }.also { launcherWebView = it }
+
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) applyImmersiveMode()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyImmersiveMode()
+        launcherWebView?.evaluateJavascript("window.dispatchEvent(new Event('orientationchange'));window.dispatchEvent(new Event('resize'))", null)
+    }
+
+    private fun applyImmersiveMode() {
+        if (Build.VERSION.SDK_INT >= 30) {
+            window.setDecorFitsSystemWindows(false)
+            window.insetsController?.apply {
+                hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            )
+        }
+    }
+
+    private fun isDefaultHomeLauncher(): Boolean {
+        if (Build.VERSION.SDK_INT >= 29) {
+            val roles = getSystemService(RoleManager::class.java)
+            if (roles.isRoleAvailable(RoleManager.ROLE_HOME)) {
+                return roles.isRoleHeld(RoleManager.ROLE_HOME)
+            }
+        }
+        val homeIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+        return packageManager.resolveActivity(homeIntent, 0)?.activityInfo?.packageName == packageName
+    }
+
+    private fun homeSetupText(fr: String, en: String, he: String, yi: String): String =
+        when (java.util.Locale.getDefault().language.lowercase()) {
+            "en" -> en
+            "he" -> he
+            "yi" -> yi
+            else -> fr
+        }
+
+    private fun maybeOfferHomeLauncher() {
+        if (Policy.isOwner(this) || isDefaultHomeLauncher() ||
+            launcherPreferences.getBoolean("home_launcher_prompt_shown", false)
+        ) return
+        launcherPreferences.edit().putBoolean("home_launcher_prompt_shown", true).apply()
+        AlertDialog.Builder(this)
+            .setTitle(homeSetupText("Utiliser YiDream comme écran d’accueil ?", "Use YiDream as your home screen?", "להשתמש ב‑YiDream כמסך הבית?", "YiDream אַלס דײַן היים־עקראַן נוצן?"))
+            .setMessage(homeSetupText("YiDream peut remplacer l’écran d’accueil pour réunir musique et navigation. Android te demandera de confirmer ce choix. Tu pourras le modifier dans les paramètres du téléphone.", "YiDream can replace the home screen to keep music and navigation together. Android will ask you to confirm. You can change this later in your phone settings.", "YiDream יכול להחליף את מסך הבית כדי לרכז מוזיקה וניווט. Android יבקש ממך לאשר. אפשר לשנות זאת בהגדרות הטלפון.", "YiDream קען פֿאַרבײַטן דעם היים־עקראַן, כּדי צונויפֿצושטעלן מוזיק און וועגווײַזער. Android וועט בעטן דײַן באַשטעטיקונג. מ׳קען דאָס שפּעטער ענדערן אין די טעלעפֿאָן־אײַנשטעלונגען."))
+            .setPositiveButton(homeSetupText("Choisir YiDream", "Choose YiDream", "לבחור ב‑YiDream", "YiDream אויסקלײַבן")) { _, _ -> requestHomeLauncherRole() }
+            .setNegativeButton(homeSetupText("Plus tard", "Later", "מאוחר יותר", "שפּעטער"), null)
+            .show()
+    }
+
+    private fun requestHomeLauncherRole() {
+        if (Build.VERSION.SDK_INT >= 29) {
+            val roles = getSystemService(RoleManager::class.java)
+            if (roles.isRoleAvailable(RoleManager.ROLE_HOME)) {
+                if (!roles.isRoleHeld(RoleManager.ROLE_HOME)) {
+                    startActivityForResult(roles.createRequestRoleIntent(RoleManager.ROLE_HOME), 4102)
+                } else {
+                    startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
+                }
+                return
+            }
+        }
+        try {
+            startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
+        } catch (_: ActivityNotFoundException) {
+            startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))
+        }
+    }
+
+    private fun isWazeVisible(): Boolean = launcherPreferences.getBoolean("show_waze", true)
+
+    private fun setWazeVisible(visible: Boolean) {
+        launcherPreferences.edit().putBoolean("show_waze", visible).apply()
+    }
 
     private fun checkForUpdates() {
         if (!updateInProgress.compareAndSet(false, true)) {
@@ -348,6 +446,21 @@ class MainActivity : Activity() {
     }
 
     inner class WebBridge {
+        @JavascriptInterface
+        fun isDeviceOwner(): Boolean = Policy.isOwner(this@MainActivity)
+
+        @JavascriptInterface
+        fun isWazeVisible(): Boolean = this@MainActivity.isWazeVisible()
+
+        @JavascriptInterface
+        fun isWazeInstalled(): Boolean = Policy.isInstalled(this@MainActivity, Config.WAZE_PACKAGE)
+
+        @JavascriptInterface
+        fun setWazeVisible(visible: Boolean) = this@MainActivity.setWazeVisible(visible)
+
+        @JavascriptInterface
+        fun openHomeRoleSettings() = runOnUiThread { requestHomeLauncherRole() }
+
         @JavascriptInterface
         fun checkForUpdates() = runOnUiThread { this@MainActivity.checkForUpdates() }
 
