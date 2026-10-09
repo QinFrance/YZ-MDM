@@ -12,6 +12,24 @@ const APP = {
 const OWNER_COMPONENT = 'com.yz.mdm/.AdminReceiver';
 const STRINGS = {
   fr: {
+    filesTitle:'Applications à ajouter',
+    filesHint:'Choisissez les APK affichés ici. Les applications déjà présentes sont conservées.',
+    chooseApk:'Choisir un APK',
+    noFileSelected:'Aucun fichier choisi',
+    launcherName:'YiDream Launcher',
+    launcherFileHint:'APK signé du launcher',
+    zemerName:'Zemer',
+    zemerFileHint:'APK officiel · installation manuelle',
+    wazeName:'Waze',
+    wazeFileHint:'APK officiel',
+    pulsarName:'Pulsar',
+    pulsarFileHint:'APK officiel',
+    storeWaze:'Télécharger Waze sur Google Play',
+    storePulsar:'Télécharger Pulsar sur Google Play',
+    ownerSummary:'Option avancée : configurer l’appareil dédié',
+    ownerWarning:'À utiliser uniquement sur un appareil neuf ou réinitialisé, avant d’ajouter un compte. Android bloque généralement cette configuration après la mise en service. Le mode dédié verrouille ensuite le téléphone sur les applications autorisées.',
+    ownerButton:'Activer le mode dédié',
+    signedApk:'APK signé',
     ready: 'WebADB prêt. Connectez un appareil Android avec le débogage USB activé.',
     unsupported: 'WebUSB n’est pas disponible ici. Ouvrez ce site dans Chrome, Edge ou Brave.',
     searching: 'Choisissez le téléphone dans la fenêtre du navigateur…',
@@ -56,6 +74,24 @@ const STRINGS = {
     noRelease: 'La release officielle de Zemer ne contient pas d’APK compatible.',
   },
   en: {
+    filesTitle:'Apps to add',
+    filesHint:'Choose the APK files shown here. Apps already installed will be kept.',
+    chooseApk:'Choose APK',
+    noFileSelected:'No file selected',
+    launcherName:'YiDream Launcher',
+    launcherFileHint:'Signed launcher APK',
+    zemerName:'Zemer',
+    zemerFileHint:'Official APK · manual install',
+    wazeName:'Waze',
+    wazeFileHint:'Official APK',
+    pulsarName:'Pulsar',
+    pulsarFileHint:'Official APK',
+    storeWaze:'Get Waze on Google Play',
+    storePulsar:'Get Pulsar on Google Play',
+    ownerSummary:'Advanced option: set up a dedicated device',
+    ownerWarning:'Use this only on a new or factory-reset phone, before adding an account. Android generally blocks this setup after the phone has been configured. Dedicated mode then locks the phone to the allowed apps.',
+    ownerButton:'Enable dedicated mode',
+    signedApk:'Signed APK',
     ready: 'WebADB is ready. Connect an Android device with USB debugging enabled.',
     unsupported: 'WebUSB is unavailable here. Open this site in Chrome, Edge, or Brave.',
     searching: 'Choose your phone in the browser dialog…',
@@ -100,6 +136,24 @@ const STRINGS = {
     noRelease: 'The official Zemer release has no compatible APK.',
   },
   he: {
+    filesTitle:'אפליקציות להוספה',
+    filesHint:'בחרו את קובצי ה‑APK שמופיעים כאן. אפליקציות שכבר מותקנות יישארו.',
+    chooseApk:'בחירת APK',
+    noFileSelected:'לא נבחר קובץ',
+    launcherName:'YiDream Launcher',
+    launcherFileHint:'קובץ APK חתום של המשגר',
+    zemerName:'Zemer',
+    zemerFileHint:'APK רשמי · התקנה ידנית',
+    wazeName:'Waze',
+    wazeFileHint:'APK רשמי',
+    pulsarName:'Pulsar',
+    pulsarFileHint:'APK רשמי',
+    storeWaze:'הורדת Waze מ‑Google Play',
+    storePulsar:'הורדת Pulsar מ‑Google Play',
+    ownerSummary:'אפשרות מתקדמת: הגדרת מכשיר ייעודי',
+    ownerWarning:'השתמשו באפשרות זו רק בטלפון חדש או מאופס להגדרות היצרן, לפני הוספת חשבון. Android בדרך כלל חוסם הגדרה זו לאחר שהטלפון הוגדר. לאחר מכן מצב ייעודי נועל את הטלפון לאפליקציות המורשות.',
+    ownerButton:'הפעלת מצב ייעודי',
+    signedApk:'APK חתום',
     ready: 'WebADB מוכן. חברו מכשיר Android עם ניפוי באגים ב‑USB.',
     unsupported: 'WebUSB אינו זמין כאן. פתחו את האתר ב‑Chrome, Edge או Brave.',
     searching: 'בחרו את הטלפון בחלון הדפדפן…',
@@ -144,6 +198,24 @@ const STRINGS = {
     noRelease: 'בגרסת Zemer הרשמית אין APK תואם.',
   },
   yi: {
+    filesTitle:'אַפּס צו צולייגן',
+    filesHint:'קלײַבט די APK־טעקעס וואָס מען ווײַזט דאָ. שוין אינסטאַלירטע אַפּס וועלן בלײַבן.',
+    chooseApk:'קלײַבן APK',
+    noFileSelected:'קיין טעקע נישט אויסגעקליבן',
+    launcherName:'YiDream Launcher',
+    launcherFileHint:'אונטערגעשריבענער Launcher APK',
+    zemerName:'Zemer',
+    zemerFileHint:'אָפֿיציעלער APK · מאַנועלע אינסטאַלאַציע',
+    wazeName:'Waze',
+    wazeFileHint:'אָפֿיציעלער APK',
+    pulsarName:'Pulsar',
+    pulsarFileHint:'אָפֿיציעלער APK',
+    storeWaze:'ברענגט Waze פֿון Google Play',
+    storePulsar:'ברענגט Pulsar פֿון Google Play',
+    ownerSummary:'פֿאָרגעשריטענע אָפּציע: אײַנשטעלן אַ דעדיקירטן מכשיר',
+    ownerWarning:'ניצט דאָס נאָר אויף אַ נײַעם אָדער צוריקגעשטעלטן טעלעפֿאָן, איידער איר לייגט צו אַ חשבון. Android בלאָקירט בדרך־כּלל די אײַנשטעלונג נאָכן צוגרייטן דעם טעלעפֿאָן. דערנאָך פֿאַרשליסט דער דעדיקירטער מאָדוס דעם טעלעפֿאָן צו די ערלויבטע אַפּס.',
+    ownerButton:'אַקטיווירן דעדיקירטן מאָדוס',
+    signedApk:'אונטערגעשריבענער APK',
     ready: 'WebADB איז גרייט. פֿאַרבינדט אַן Android מיט USB-דעבאַגינג.',
     unsupported: 'WebUSB איז נישט בנימצא. עפֿנט דעם פּלאַץ אין Chrome, Edge אָדער Brave.',
     searching: 'קלײַבט דעם טעלעפֿאָן אינעם בלעטערער־פֿענצטער…',
@@ -392,6 +464,25 @@ function renderStatuses() {
   updateButtons();
 }
 
+function refreshFilePickerCopy() {
+  for (const id of ['launcher', 'zemer', 'waze', 'pulsar']) {
+    el(`apk-title-${id}`).textContent = msg(id === 'launcher' ? 'launcherName' : `${id}Name`);
+    el(`apk-detail-${id}`).textContent = msg(id === 'launcher' ? 'launcherFileHint' : `${id}FileHint`);
+    el(`apk-action-${id}`).textContent = msg('chooseApk');
+    const input = el(`file-${id}`);
+    const file = input.files?.[0];
+    const label = el(`pick-${id}-label`);
+    el(`file-name-${id}`).textContent = file?.name || msg('noFileSelected');
+    label.classList.toggle('has-file', Boolean(file));
+    input.setAttribute('aria-label', `${msg(id === 'launcher' ? 'launcherName' : `${id}Name`)}: ${msg('chooseApk')}`);
+  }
+  el('storeWaze').textContent = msg('storeWaze');
+  el('storePulsar').textContent = msg('storePulsar');
+  el('ownerSummary').textContent = msg('ownerSummary');
+  el('ownerWarning').textContent = msg('ownerWarning');
+  el('ownerBtn').textContent = msg('ownerButton');
+}
+
 function showFileOptions() {
   const selected = selectedApps();
   const showFor = {
@@ -408,11 +499,11 @@ function showFileOptions() {
   }
   el('storeLinks').hidden = !(showFor.waze || showFor.pulsar);
   el('runtimeFiles').hidden = !visible;
-  if (!buildInfo.releaseReady && showFor.launcher) {
-    el('fileTitle').textContent = msg('launcherSigning');
-  } else {
-    el('fileTitle').textContent = msg('needApk');
-  }
+  el('fileTitle').textContent = msg('filesTitle');
+  el('fileHint').textContent = !buildInfo.releaseReady && showFor.launcher
+    ? msg('launcherSigning')
+    : msg('filesHint');
+  refreshFilePickerCopy();
 }
 
 async function checkApps() {
@@ -587,6 +678,7 @@ el('ownerBtn').addEventListener('click', () => handle(activateOwner));
 
 for (const input of document.querySelectorAll('.apk-file input')) {
   input.addEventListener('change', () => {
+    refreshFilePickerCopy();
     if (window.webAdbHasCheck) renderStatuses();
   });
 }
@@ -608,11 +700,12 @@ window.addEventListener('installer-language', (event) => {
       el('deviceTitle').textContent = phone || msg('connected');
     }
   }
+  refreshFilePickerCopy();
   if (window.webAdbHasCheck) {
     renderStatuses();
     showFileOptions();
   }
-  if (buildInfo.releaseReady) el('copyApkDownload').textContent = `YiDream Launcher · v${buildInfo.versionName} · APK`;
+  if (buildInfo.releaseReady) el('copyApkDownload').textContent = `YiDream Launcher · v${buildInfo.versionName} · ${msg('signedApk')}`;
 });
 
 async function loadBuildInfo() {
@@ -624,7 +717,7 @@ async function loadBuildInfo() {
     const link = el('copyApkDownload');
     link.href = './downloads/yz-mdm.apk';
     link.hidden = false;
-    link.textContent = `YiDream Launcher · v${buildInfo.versionName} · APK signé`;
+    link.textContent = `YiDream Launcher · v${buildInfo.versionName} · ${msg('signedApk')}`;
     setStatus(msg('launcherReady'), 'success');
   } else {
     el('copyApkDownload').hidden = true;
