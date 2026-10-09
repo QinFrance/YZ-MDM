@@ -12,8 +12,8 @@ const APP = {
 const OWNER_COMPONENT = 'com.yz.mdm/.AdminReceiver';
 const STRINGS = {
   fr: {
-    filesTitle:'Applications à ajouter',
-    filesHint:'Choisissez les APK affichés ici. Les applications déjà présentes sont conservées.',
+    filesTitle:'Installation automatique',
+    filesHint:'Les applications déjà installées sont conservées. YiDream et Zemer se téléchargent automatiquement ; l’installation de Waze et Pulsar passe par Google Play.',
     chooseApk:'Choisir un APK',
     noFileSelected:'Aucun fichier choisi',
     launcherName:'YiDream Launcher',
@@ -29,6 +29,19 @@ const STRINGS = {
     ownerSummary:'Option avancée : configurer l’appareil dédié',
     ownerWarning:'À utiliser uniquement sur un appareil neuf ou réinitialisé, avant d’ajouter un compte. Android bloque généralement cette configuration après la mise en service. Le mode dédié verrouille ensuite le téléphone sur les applications autorisées.',
     ownerButton:'Activer le mode dédié',
+    filesTitle: "Installation automatique",
+    filesHint: "YiDream et Zemer se téléchargent automatiquement. Pour Waze et Pulsar, Android ouvre Google Play afin de confirmer l’installation.",
+    storeWaze: "Installer Waze sur le téléphone",
+    storePulsar: "Installer Pulsar sur le téléphone",
+    storeOpened: "Google Play est ouvert sur le téléphone. Terminez l’installation, puis revérifiez les applications.",
+    ownerRemoveButton: "Retirer les restrictions du mode dédié",
+    ownerRemoveWarning: "Le retrait désactive les restrictions de YiDream sans effacer vos applications ni vos fichiers. Réinitialisez séparément le téléphone avant de le vendre.",
+    ownerRemoveConfirm: "Cela retire YiDream comme administrateur et désactive les restrictions du mode dédié. Les applications et les données ne sont pas supprimées. Certaines règles peuvent rester : réinitialisez l’appareil avant de le vendre. Continuer ?",
+    ownerRemoved: "Les restrictions du mode dédié ont été retirées. Vous pouvez maintenant modifier le launcher ou réinitialiser le téléphone.",
+    ownerRemoveError: "Android n’a pas pu retirer les droits administrateur.",
+    openingStore: "Ouverture de Google Play sur le téléphone…",
+    storeOpenError: "Impossible d’ouvrir Google Play sur ce téléphone.",
+    storeZemer: "Installer Zemer sur le téléphone",
     signedApk:'APK signé',
     ready: 'WebADB prêt. Connectez un appareil Android avec le débogage USB activé.',
     unsupported: 'WebUSB n’est pas disponible ici. Ouvrez ce site dans Chrome, Edge ou Brave.',
@@ -51,15 +64,15 @@ const STRINGS = {
     ownerDone: 'Mode appareil dédié activé. YiDream est défini comme écran d’accueil.',
     ownerConfirm: 'Cette action configure YiDream comme administrateur de l’appareil. Elle est prévue pour un téléphone neuf ou réinitialisé, sans compte ajouté. Android peut refuser si le téléphone a déjà été configuré. Continuer ?',
     noDevice: 'Connectez d’abord un téléphone.',
-    noLauncher: 'YiDream Launcher est absent. Ajoutez un APK signé avec la clé de la version déjà installée, ou activez le téléchargement de release.',
+    noLauncher: 'Le launcher YiDream est absent et aucun APK signé n’est publié pour cette version.',
     needApk: 'Sélectionnez l’APK officiel pour cette application, puis relancez l’installation.',
     launcherReady: 'APK signé prêt à télécharger.',
-    launcherSigning: 'APK de release indisponible : ajoutez les secrets de signature GitHub ou choisissez un APK signé.',
+    launcherSigning: 'APK signé indisponible : vérifiez la signature GitHub et la dernière compilation.',
     installed: 'Installée',
     missing: 'Absente',
     notSelected: 'Non sélectionnée',
     zemerRelease: 'Récupération de la dernière version officielle de Zemer…',
-    zemerFetchFail: 'Téléchargement automatique de Zemer impossible. Choisissez son APK officiel.',
+    zemerFetchFail: 'Le téléchargement automatique de Zemer a échoué. Utilisez le bouton Google Play pour l’installer.',
     skipped: 'Pas d’APK fourni : ouvrez Google Play, installez l’application puis revérifiez.',
     ownerError: 'Android n’a pas activé le mode dédié. Le téléphone doit généralement être neuf/réinitialisé et sans compte.',
     permission: 'Autorisez le débogage USB sur le téléphone, puis réessayez.',
@@ -74,8 +87,8 @@ const STRINGS = {
     noRelease: 'La release officielle de Zemer ne contient pas d’APK compatible.',
   },
   en: {
-    filesTitle:'Apps to add',
-    filesHint:'Choose the APK files shown here. Apps already installed will be kept.',
+    filesTitle:'Automatic installation',
+    filesHint:'Apps already installed are kept. YiDream and Zemer download automatically; Waze and Pulsar installation goes through Google Play.',
     chooseApk:'Choose APK',
     noFileSelected:'No file selected',
     launcherName:'YiDream Launcher',
@@ -91,6 +104,19 @@ const STRINGS = {
     ownerSummary:'Advanced option: set up a dedicated device',
     ownerWarning:'Use this only on a new or factory-reset phone, before adding an account. Android generally blocks this setup after the phone has been configured. Dedicated mode then locks the phone to the allowed apps.',
     ownerButton:'Enable dedicated mode',
+    filesTitle: "Automatic installation",
+    filesHint: "YiDream and Zemer download automatically. For Waze and Pulsar, Android opens Google Play so you can confirm installation.",
+    storeWaze: "Install Waze on the phone",
+    storePulsar: "Install Pulsar on the phone",
+    storeOpened: "Google Play is open on the phone. Finish the installation, then check the apps again.",
+    ownerRemoveButton: "Remove dedicated-device restrictions",
+    ownerRemoveWarning: "This removes YiDream's restrictions without deleting apps or files. Factory-reset the phone separately before selling it.",
+    ownerRemoveConfirm: "This removes YiDream as device administrator and turns off dedicated-device restrictions. Apps and data are not deleted. Some policies may remain; factory-reset the phone before selling it. Continue?",
+    ownerRemoved: "Dedicated-device restrictions are removed. You can now change the launcher or factory-reset the phone.",
+    ownerRemoveError: "Android could not remove device administrator access.",
+    openingStore: "Opening Google Play on the phone…",
+    storeOpenError: "Could not open Google Play on this phone.",
+    storeZemer: "Install Zemer on the phone",
     signedApk:'Signed APK',
     ready: 'WebADB is ready. Connect an Android device with USB debugging enabled.',
     unsupported: 'WebUSB is unavailable here. Open this site in Chrome, Edge, or Brave.',
@@ -113,15 +139,15 @@ const STRINGS = {
     ownerDone: 'Dedicated-device mode enabled. YiDream is now the home screen.',
     ownerConfirm: 'This sets YiDream as device owner. It is intended for a new or reset phone with no account added. Android may reject this on a phone already set up. Continue?',
     noDevice: 'Connect a phone first.',
-    noLauncher: 'YiDream Launcher is missing. Choose an APK signed with the same key as any existing install, or enable release downloads.',
+    noLauncher: 'YiDream Launcher is missing and no signed APK has been published for this version.',
     needApk: 'Choose the official APK for this app, then start installation again.',
     launcherReady: 'Signed APK is ready to download.',
-    launcherSigning: 'Release APK unavailable: add GitHub signing secrets or choose a signed APK.',
+    launcherSigning: 'Signed APK unavailable: check the GitHub signing setup and latest build.',
     installed: 'Installed',
     missing: 'Missing',
     notSelected: 'Not selected',
     zemerRelease: 'Getting the latest official Zemer release…',
-    zemerFetchFail: 'Could not download Zemer automatically. Choose its official APK.',
+    zemerFetchFail: 'Automatic Zemer download failed. Use the Google Play button to install it.',
     skipped: 'No APK selected. Open Google Play, install the app, then check again.',
     ownerError: 'Android could not enable dedicated-device mode. The phone usually must be new/reset and have no account.',
     permission: 'Approve USB debugging on the phone, then try again.',
@@ -137,7 +163,7 @@ const STRINGS = {
   },
   he: {
     filesTitle:'אפליקציות להוספה',
-    filesHint:'בחרו את קובצי ה‑APK שמופיעים כאן. אפליקציות שכבר מותקנות יישארו.',
+    filesHint:'אפליקציות שכבר מותקנות יישארו. YiDream ו‑Zemer יורדו אוטומטית; התקנת Waze ו‑Pulsar מתבצעת דרך Google Play.',
     chooseApk:'בחירת APK',
     noFileSelected:'לא נבחר קובץ',
     launcherName:'YiDream Launcher',
@@ -153,6 +179,19 @@ const STRINGS = {
     ownerSummary:'אפשרות מתקדמת: הגדרת מכשיר ייעודי',
     ownerWarning:'השתמשו באפשרות זו רק בטלפון חדש או מאופס להגדרות היצרן, לפני הוספת חשבון. Android בדרך כלל חוסם הגדרה זו לאחר שהטלפון הוגדר. לאחר מכן מצב ייעודי נועל את הטלפון לאפליקציות המורשות.',
     ownerButton:'הפעלת מצב ייעודי',
+    filesTitle: "התקנה אוטומטית",
+    filesHint: "YiDream ו‑Zemer יורדו אוטומטית. עבור Waze ו‑Pulsar, Android יפתח את Google Play כדי לאשר את ההתקנה.",
+    storeWaze: "התקנת Waze בטלפון",
+    storePulsar: "התקנת Pulsar בטלפון",
+    storeOpened: "Google Play פתוח בטלפון. השלימו את ההתקנה ובדקו שוב את האפליקציות.",
+    ownerRemoveButton: "הסרת ההגבלות של מצב ייעודי",
+    ownerRemoveWarning: "הסרה זו מבטלת את הגבלות YiDream בלי למחוק אפליקציות או קבצים. לפני מכירה, אפסו את הטלפון בנפרד.",
+    ownerRemoveConfirm: "פעולה זו מסירה את YiDream כמנהל המכשיר ומבטלת את הגבלות המצב הייעודי. האפליקציות והנתונים לא יימחקו. ייתכן שחלק מהמדיניות תישאר; אפסו את הטלפון לפני מכירה. להמשיך?",
+    ownerRemoved: "הגבלות המצב הייעודי הוסרו. כעת ניתן להחליף משגר או לאפס את הטלפון.",
+    ownerRemoveError: "Android לא הצליח להסיר את הרשאות מנהל המכשיר.",
+    openingStore: "פותח את Google Play בטלפון…",
+    storeOpenError: "לא ניתן לפתוח את Google Play בטלפון הזה.",
+    storeZemer: "התקנת Zemer בטלפון",
     signedApk:'APK חתום',
     ready: 'WebADB מוכן. חברו מכשיר Android עם ניפוי באגים ב‑USB.',
     unsupported: 'WebUSB אינו זמין כאן. פתחו את האתר ב‑Chrome, Edge או Brave.',
@@ -175,15 +214,15 @@ const STRINGS = {
     ownerDone: 'מצב מכשיר ייעודי הופעל. YiDream הוגדר כמסך הבית.',
     ownerConfirm: 'פעולה זו מגדירה את YiDream כמנהל המכשיר. מיועדת לטלפון חדש או מאופס, ללא חשבון. Android עשוי לסרב אם הטלפון כבר הוגדר. להמשיך?',
     noDevice: 'חברו תחילה טלפון.',
-    noLauncher: 'YiDream Launcher חסר. בחרו APK חתום באותו מפתח או הפעילו הורדות release.',
+    noLauncher: 'YiDream Launcher חסר ולא פורסם APK חתום לגרסה זו.',
     needApk: 'בחרו APK רשמי לאפליקציה זו והפעילו שוב את ההתקנה.',
     launcherReady: 'APK חתום מוכן להורדה.',
-    launcherSigning: 'APK release אינו זמין: הוסיפו סודות חתימה ב‑GitHub או בחרו APK חתום.',
+    launcherSigning: 'APK חתום אינו זמין: בדקו את הגדרות החתימה ב‑GitHub ואת הבנייה האחרונה.',
     installed: 'מותקנת',
     missing: 'חסרה',
     notSelected: 'לא נבחרה',
     zemerRelease: 'מוריד את הגרסה הרשמית האחרונה של Zemer…',
-    zemerFetchFail: 'לא ניתן להוריד את Zemer אוטומטית. בחרו APK רשמי.',
+    zemerFetchFail: 'ההורדה האוטומטית של Zemer נכשלה. השתמשו בכפתור Google Play להתקנה.',
     skipped: 'לא נבחר APK. פתחו את Google Play, התקינו את האפליקציה ובדקו שוב.',
     ownerError: 'Android לא הפעיל מצב ייעודי. בדרך כלל הטלפון צריך להיות חדש/מאופס וללא חשבון.',
     permission: 'אשרו ניפוי באגים ב‑USB בטלפון ונסו שוב.',
@@ -199,7 +238,7 @@ const STRINGS = {
   },
   yi: {
     filesTitle:'אַפּס צו צולייגן',
-    filesHint:'קלײַבט די APK־טעקעס וואָס מען ווײַזט דאָ. שוין אינסטאַלירטע אַפּס וועלן בלײַבן.',
+    filesHint:'שוין אינסטאַלירטע אַפּס בלײַבן. YiDream און Zemer ווערן אראפגעלאָדן אויטאָמאַטיש; Waze און Pulsar אינסטאַלאַציע גייט דורך Google Play.',
     chooseApk:'קלײַבן APK',
     noFileSelected:'קיין טעקע נישט אויסגעקליבן',
     launcherName:'YiDream Launcher',
@@ -215,6 +254,19 @@ const STRINGS = {
     ownerSummary:'פֿאָרגעשריטענע אָפּציע: אײַנשטעלן אַ דעדיקירטן מכשיר',
     ownerWarning:'ניצט דאָס נאָר אויף אַ נײַעם אָדער צוריקגעשטעלטן טעלעפֿאָן, איידער איר לייגט צו אַ חשבון. Android בלאָקירט בדרך־כּלל די אײַנשטעלונג נאָכן צוגרייטן דעם טעלעפֿאָן. דערנאָך פֿאַרשליסט דער דעדיקירטער מאָדוס דעם טעלעפֿאָן צו די ערלויבטע אַפּס.',
     ownerButton:'אַקטיווירן דעדיקירטן מאָדוס',
+    filesTitle: "אָטאָמאַטישע אינסטאַלאַציע",
+    filesHint: "YiDream און Zemer ווערן אראפגעלאָדן אויטאָמאַטיש. פֿאַר Waze און Pulsar עפֿנט Android Google Play כּדי איר זאָלט באַשטעטיקן די אינסטאַלאַציע.",
+    storeWaze: "אינסטאַלירן Waze אויפֿן טעלעפֿאָן",
+    storePulsar: "אינסטאַלירן Pulsar אויפֿן טעלעפֿאָן",
+    storeOpened: "Google Play איז אָפֿן אויפֿן טעלעפֿאָן. ענדיקט די אינסטאַלאַציע און קאָנטראָלירט די אַפּס ווידער.",
+    ownerRemoveButton: "אַראָפּנעמען די באַגרענעצונגען פֿון דעדיקירטן מאָדוס",
+    ownerRemoveWarning: "דאָס נעמט אַראָפּ YiDream'ס באַגרענעצונגען אָן אויסמעקן אַפּס אָדער טעקעס. איידער איר פֿאַרקויפֿט דעם טעלעפֿאָן, מאַכט אַ באַזונדערע פֿאַבריק־אויפֿשטעלונג.",
+    ownerRemoveConfirm: "דאָס נעמט אַראָפּ YiDream ווי מיטל־אַדמיניסטראַטאָר און שאַלט אָפּ די באַגרענעצונגען. אַפּס און דאַטן ווערן נישט אויסגעמעקט. עטלעכע כּללים קענען בלײַבן; שטעלט דעם טעלעפֿאָן צוריק פֿאַרן פֿאַרקויפֿן. ווײַטער?",
+    ownerRemoved: "די באַגרענעצונגען פֿון דעדיקירטן מאָדוס זענען אַוועק. איר קענט איצט טוישן דעם Launcher אָדער צוריקשטעלן דעם טעלעפֿאָן.",
+    ownerRemoveError: "Android האָט נישט געקענט אַראָפּנעמען די אַדמיניסטראַטאָר־רעכט.",
+    openingStore: "עפֿנט Google Play אויפֿן טעלעפֿאָן…",
+    storeOpenError: "Google Play האָט זיך נישט געקענט עפֿענען אויפֿן טעלעפֿאָן.",
+    storeZemer: "אינסטאַלירן Zemer אויפֿן טעלעפֿאָן",
     signedApk:'אונטערגעשריבענער APK',
     ready: 'WebADB איז גרייט. פֿאַרבינדט אַן Android מיט USB-דעבאַגינג.',
     unsupported: 'WebUSB איז נישט בנימצא. עפֿנט דעם פּלאַץ אין Chrome, Edge אָדער Brave.',
@@ -237,15 +289,15 @@ const STRINGS = {
     ownerDone: 'דעדיקירטער־מכשיר מאָדוס איז אַקטיוו. YiDream איז דער היים־עקראַן.',
     ownerConfirm: 'דאָס שטעלט YiDream ווי דעם מכשיר־באַזיצער. עס איז פֿאַר אַ נײַעם אָדער צוריקגעשטעלטן טעלעפֿאָן אָן צוגעלייגטן חשבון. Android קען אָפּזאָגן אויב דער טעלעפֿאָן איז שוין איינגעשטעלט. ווײַטער?',
     noDevice: 'פֿאַרבינדט ערשט אַ טעלעפֿאָן.',
-    noLauncher: 'YiDream Launcher פֿעלט. קלײַבט אַן APK אונטערגעשריבן מיט דעם זעלבן שליסל ווי אַן עקזיסטירנדיקער אינסטאַלאַציע, אָדער שטעלט צו release downloads.',
+    noLauncher: 'YiDream Launcher פֿעלט, און עס איז נישט פֿאַרעפֿנטלעכט קיין אונטערגעשריבענער APK פֿאַר דער ווערסיע.',
     needApk: 'קלײַבט דעם אָפֿיציעלן APK פֿאַר דער אַפּ און הייבט אָן ווידער.',
     launcherReady: 'דער אונטערגעשריבענער APK איז גרייט צום אָפּלאָדן.',
-    launcherSigning: 'Release APK איז נישט בנימצא: שטעלט צו GitHub signing secrets אָדער קלײַבט אַן אונטערגעשריבענעם APK.',
+    launcherSigning: 'דער אונטערגעשריבענער APK איז נישט בנימצא: קאָנטראָלירט GitHub signing און די לעצטע build.',
     installed: 'אינסטאַלירט',
     missing: 'פֿעלט',
     notSelected: 'נישט אויסגעקליבן',
     zemerRelease: 'ברענגט די לעצטע אָפֿיציעלע Zemer release…',
-    zemerFetchFail: 'קען נישט אָפּלאָדן Zemer אויטאָמאַטיש. קלײַבט דעם אָפֿיציעלן APK.',
+    zemerFetchFail: 'Zemer האָט זיך נישט געקענט אראפלאדן אויטאָמאַטיש. ניצט דעם Google Play קנעפּל צו אינסטאַלירן.',
     skipped: 'קיין APK נישט אויסגעקליבן. עפֿנט Google Play, אינסטאַלירט די אַפּ און קאָנטראָלירט ווידער.',
     ownerError: 'Android האָט נישט געקענט אַקטיווירן דעם דעדיקירטן מאָדוס. געוויינטלעך דאַרף דער טעלעפֿאָן זײַן נײַ/צוריקגעשטעלט אָן חשבון.',
     permission: 'דערלויבט USB-דעבאַגינג אויפֿן טעלעפֿאָן און פּרוּווט ווידער.',
@@ -264,6 +316,8 @@ const STRINGS = {
 let language = document.documentElement.lang || 'fr';
 let buildInfo = { releaseReady: false };
 let appState = null;
+let deviceOwnerActive = false;
+let zemerFetchFailed = false;
 
 class YZWebAdb {
   constructor() {
@@ -361,12 +415,26 @@ class YZWebAdb {
 
   static isSuccess(result) {
     if (result.exitCode === 0) return true;
-    if (result.exitCode === null) return /Success/i.test(result.out);
+    if (result.exitCode === null) return /Success|Starting:\s*Intent/i.test(result.out);
     return false;
+  }
+
+  async isDeviceOwner() {
+    const result = await this.sh(['dumpsys', 'device_policy']);
+    const start = result.out.search(/Device Owner(?:\s*\([^)]*\))?\s*:/i);
+    if (start < 0) return false;
+    const tail = result.out.slice(start, start + 1200);
+    const profileOwner = tail.search(/Profile Owner\s*:/i);
+    const section = profileOwner >= 0 ? tail.slice(0, profileOwner) : tail;
+    return section.includes('com.yz.mdm') && section.includes('AdminReceiver');
   }
 
   setDeviceOwner() {
     return this.sh(['dpm', 'set-device-owner', OWNER_COMPONENT]);
+  }
+
+  removeDeviceOwner() {
+    return this.sh(['dpm', 'remove-active-admin', OWNER_COMPONENT]);
   }
 }
 
@@ -397,6 +465,7 @@ function selectedApps() {
 
 function setDeviceUi(connected, info = null) {
   window.webAdbConnected = connected;
+  if (!connected) deviceOwnerActive = false;
   const connectBtn = el('connectBtn');
   connectBtn.textContent = msg(connected ? 'disconnect' : 'connect');
   connectBtn.disabled = false;
@@ -429,7 +498,22 @@ function setDeviceUi(connected, info = null) {
 function updateButtons() {
   el('checkBtn').disabled = !adb.adb;
   el('installBtn').disabled = !adb.adb || !window.webAdbHasCheck;
-  el('ownerBtn').disabled = !adb.adb || !appState?.launcher?.installed;
+  el('ownerBtn').disabled = !adb.adb || !appState?.launcher?.installed || deviceOwnerActive;
+  el('ownerBtn').hidden = deviceOwnerActive;
+  el('ownerRemoveWarning').hidden = !deviceOwnerActive;
+  el('removeOwnerBtn').disabled = !adb.adb || !deviceOwnerActive;
+  el('removeOwnerBtn').hidden = !deviceOwnerActive;
+}
+
+async function refreshOwnerStatus() {
+  if (!adb.adb) {
+    deviceOwnerActive = false;
+    updateButtons();
+    return;
+  }
+  try { deviceOwnerActive = await adb.isDeviceOwner(); }
+  catch { deviceOwnerActive = false; }
+  updateButtons();
 }
 
 function needsLauncherUpdate() {
@@ -453,7 +537,7 @@ function renderStatuses() {
       const version = appState[id]?.version ? ` · v${appState[id].version}` : '';
       status.textContent = `${msg('statusCurrent')}${version}`;
       status.className = 'result ok';
-    } else if ((id === 'waze' || id === 'pulsar') && !el(`file-${id}`).files.length) {
+    } else if (id === 'waze' || id === 'pulsar') {
       status.textContent = msg('statusNeedsPlay');
       status.className = 'result warn';
     } else {
@@ -464,60 +548,54 @@ function renderStatuses() {
   updateButtons();
 }
 
-function refreshFilePickerCopy() {
-  for (const id of ['launcher', 'zemer', 'waze', 'pulsar']) {
-    el(`apk-title-${id}`).textContent = msg(id === 'launcher' ? 'launcherName' : `${id}Name`);
-    el(`apk-detail-${id}`).textContent = msg(id === 'launcher' ? 'launcherFileHint' : `${id}FileHint`);
-    el(`apk-action-${id}`).textContent = msg('chooseApk');
-    const input = el(`file-${id}`);
-    const file = input.files?.[0];
-    const label = el(`pick-${id}-label`);
-    el(`file-name-${id}`).textContent = file?.name || msg('noFileSelected');
-    label.classList.toggle('has-file', Boolean(file));
-    input.setAttribute('aria-label', `${msg(id === 'launcher' ? 'launcherName' : `${id}Name`)}: ${msg('chooseApk')}`);
-  }
+function refreshRuntimeCopy() {
+  el('storeZemer').textContent = msg('storeZemer');
   el('storeWaze').textContent = msg('storeWaze');
   el('storePulsar').textContent = msg('storePulsar');
   el('ownerSummary').textContent = msg('ownerSummary');
   el('ownerWarning').textContent = msg('ownerWarning');
+  el('ownerRemoveWarning').textContent = msg('ownerRemoveWarning');
   el('ownerBtn').textContent = msg('ownerButton');
+  el('removeOwnerBtn').textContent = msg('ownerRemoveButton');
 }
-
 function showFileOptions() {
+  if (!appState) return;
   const selected = selectedApps();
-  const showFor = {
-    launcher: (!appState?.launcher?.installed || needsLauncherUpdate()) && !buildInfo.releaseReady,
-    zemer: selected.zemer && !appState?.zemer?.installed,
-    waze: selected.waze && !appState?.waze?.installed,
-    pulsar: selected.pulsar && !appState?.pulsar?.installed,
+  const missing = {
+    zemer: selected.zemer && !appState.zemer?.installed,
+    waze: selected.waze && !appState.waze?.installed,
+    pulsar: selected.pulsar && !appState.pulsar?.installed,
   };
-  let visible = false;
-  for (const id of Object.keys(showFor)) {
-    const label = el(`pick-${id}-label`);
-    label.hidden = !showFor[id];
-    visible ||= showFor[id];
-  }
-  el('storeLinks').hidden = !(showFor.waze || showFor.pulsar);
-  el('runtimeFiles').hidden = !visible;
+  const showZemerStore = missing.zemer && zemerFetchFailed;
+  const launcherUnavailable = (!appState.launcher?.installed || needsLauncherUpdate()) && !buildInfo.releaseReady;
+  el('runtimeFiles').hidden = !Object.values(missing).some(Boolean) && !launcherUnavailable;
   el('fileTitle').textContent = msg('filesTitle');
-  el('fileHint').textContent = !buildInfo.releaseReady && showFor.launcher
-    ? msg('launcherSigning')
-    : msg('filesHint');
-  refreshFilePickerCopy();
+  el('fileHint').textContent = launcherUnavailable ? msg('launcherSigning') : msg('filesHint');
+  el('storeLinks').hidden = !(showZemerStore || missing.waze || missing.pulsar);
+  el('storeZemer').hidden = !showZemerStore;
+  el('storeWaze').hidden = !missing.waze;
+  el('storePulsar').hidden = !missing.pulsar;
 }
-
 async function checkApps() {
   if (!adb.adb) throw new Error('NOT_CONNECTED');
   setStatus(msg('checking'));
-  const entries = await Promise.all(Object.entries(APP).map(async ([id, app]) => {
-    const installed = await adb.isInstalled(app.package);
-    const version = installed ? await adb.appVersion(app.package) : { name: '', code: 0 };
-    return [id, { installed, version: version.name, versionCode: version.code }];
-  }));
+  setProgress(msg('checking'), 0, 0, true);
+  let entries;
+  try {
+    entries = await Promise.all(Object.entries(APP).map(async ([id, app]) => {
+      const installed = await adb.isInstalled(app.package);
+      const version = installed ? await adb.appVersion(app.package) : { name: '', code: 0 };
+      return [id, { installed, version: version.name, versionCode: version.code }];
+    }));
+  } finally {
+    el('runtimeProgress').hidden = true;
+  }
   appState = Object.fromEntries(entries);
   window.webAdbHasCheck = true;
   renderStatuses();
+  await refreshOwnerStatus();
   showFileOptions();
+  el('runtimeProgress').hidden = true;
   el('actionNote').textContent = msg('checkDone');
   el('installBtn').disabled = false;
   el('ownerBtn').disabled = !appState.launcher.installed;
@@ -542,15 +620,32 @@ async function fetchLatestZemer() {
 }
 
 async function getLauncherApk() {
-  if (buildInfo.releaseReady) {
-    const url = new URL('./downloads/yz-mdm.apk', location.href);
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) throw new Error('LAUNCHER_DOWNLOAD');
-    return response.blob();
-  }
-  const local = el('file-launcher').files[0];
-  if (local) return local;
-  throw new Error('LAUNCHER_NOT_READY');
+  if (!buildInfo.releaseReady) throw new Error('LAUNCHER_NOT_READY');
+  const url = new URL('./downloads/yz-mdm.apk', location.href);
+  const response = await fetch(url, { cache: 'no-store' });
+  if (!response.ok) throw new Error('LAUNCHER_DOWNLOAD');
+  return response.blob();
+}
+
+function setProgress(label, completed = 0, total = 0, busy = false) {
+  const root = el('runtimeProgress');
+  const fill = el('progressFill');
+  root.hidden = false;
+  el('progressLabel').textContent = label;
+  el('progressCount').textContent = total
+    ? `${Math.min(completed + (busy ? 1 : 0), total)} / ${total}`
+    : '';
+  fill.classList.toggle('busy', busy);
+  fill.style.width = total ? `${Math.round(completed / total * 100)}%` : '0%';
+}
+
+async function openStoreApp(id) {
+  const packageName = APP[id]?.package;
+  if (!packageName) throw new Error('STORE_OPEN_FAILED');
+  const market = await adb.sh(['am', 'start', '-a', 'android.intent.action.VIEW', '-d', `market://details?id=${packageName}`]);
+  if (YZWebAdb.isSuccess(market)) return;
+  const web = await adb.sh(['am', 'start', '-a', 'android.intent.action.VIEW', '-d', `https://play.google.com/store/apps/details?id=${packageName}`]);
+  if (!YZWebAdb.isSuccess(web)) throw new Error('STORE_OPEN_FAILED');
 }
 
 async function installOne(id, file) {
@@ -562,61 +657,74 @@ async function installSelected() {
   await buildInfoPromise;
   if (!adb.adb || !appState) throw new Error('NOT_CONNECTED');
   const selection = selectedApps();
-  const list = ['zemer', 'waze', 'pulsar'].filter((id) => selection[id] && !appState[id].installed);
+  zemerFetchFailed = false;
+  const missingApps = ['zemer', 'waze', 'pulsar'].filter((id) => selection[id] && !appState[id].installed);
   const launcherNeedsInstall = !appState.launcher.installed || needsLauncherUpdate();
-  if (launcherNeedsInstall && !buildInfo.releaseReady && !el('file-launcher').files[0]) {
+  if (launcherNeedsInstall && !buildInfo.releaseReady) {
     showFileOptions();
     throw new Error('LAUNCHER_NOT_READY');
   }
+  const autoApps = missingApps.filter((id) => id === 'zemer');
+  const storeApps = missingApps.filter((id) => id === 'waze' || id === 'pulsar');
+  const total = autoApps.length + (launcherNeedsInstall ? 1 : 0) + (storeApps.length ? 1 : 0);
+  if (!total) {
+    setStatus(msg('checkDone'), 'success');
+    el('actionNote').textContent = msg('checkDone');
+    return;
+  }
   setStatus(msg('installStart'));
-  el('runtimeProgress').hidden = false;
-  el('progressLabel').textContent = msg('installStart');
   setStep(3);
   const failed = [];
-  const skipped = [];
-  for (const id of list) {
-    try {
-      let file = el(`file-${id}`).files[0];
-      if (!file && id === 'zemer') {
-        el('progressLabel').textContent = msg('zemerRelease');
-        try { file = await fetchLatestZemer(); }
-        catch { showFileOptions(); throw new Error('ZEMER_FETCH'); }
+  let completed = 0;
+  try {
+    for (const id of autoApps) {
+      setProgress(id === 'zemer' ? msg('zemerRelease') : msg('installStart'), completed, total, true);
+      try {
+        const file = await fetchLatestZemer();
+        setProgress(`${msg('zemerName')} · ${msg('installStart')}`, completed, total, true);
+        await installOne(id, file);
+      } catch (error) {
+        zemerFetchFailed = true;
+        failed.push({ id, error: error?.message === 'ZEMER_NO_APK' ? new Error('NO_RELEASE') : new Error('ZEMER_FETCH') });
       }
-      if (!file) {
-        skipped.push(id);
-        setStatus(`${id}: ${msg('skipped')}`, 'warn');
-        continue;
+      completed++;
+      setProgress(msg('installStart'), completed, total, false);
+    }
+    if (launcherNeedsInstall) {
+      setProgress(msg('launcherName'), completed, total, true);
+      try {
+        const file = await getLauncherApk();
+        await installOne('launcher', file);
+      } catch (error) {
+        failed.push({ id: 'launcher', error });
       }
-      el('progressLabel').textContent = `${id} · ${file.name || 'APK'}`;
-      await installOne(id, file);
-    } catch (error) {
-      failed.push({ id, error });
+      completed++;
+      setProgress(msg('installStart'), completed, total, false);
     }
-  }
-  if (launcherNeedsInstall) {
-    try {
-      const file = await getLauncherApk();
-      await installOne('launcher', file);
-    } catch (error) {
-      failed.push({ id: 'launcher', error });
+    if (storeApps.length) {
+      const id = storeApps[0];
+      setProgress(msg('openingStore'), completed, total, true);
+      try { await openStoreApp(id); }
+      catch (error) { failed.push({ id, error }); }
+      completed++;
+      setProgress(msg('installStart'), completed, total, false);
     }
+  } finally {
+    el('runtimeProgress').hidden = true;
   }
-  el('runtimeProgress').hidden = true;
   await checkApps();
   if (failed.length) {
     const reason = failed.map(({ id, error }) => `${id}: ${error?.message || msg('operationFailed')}`).join(' · ');
     setStatus(reason, 'error');
     el('actionNote').textContent = msg('operationFailed');
-  } else if (skipped.length) {
-    const reason = `${msg('installDone')} ${skipped.join(', ')}: ${msg('skipped')}`;
-    setStatus(reason, 'warn');
-    el('actionNote').textContent = reason;
+  } else if (storeApps.length) {
+    setStatus(msg('storeOpened'), 'warn');
+    el('actionNote').textContent = msg('storeOpened');
   } else {
     setStatus(msg('installDone'), 'success');
     el('actionNote').textContent = msg('installDone');
   }
 }
-
 async function activateOwner() {
   if (!adb.adb) throw new Error('NOT_CONNECTED');
   if (!appState?.launcher?.installed) throw new Error('LAUNCHER_NOT_READY');
@@ -628,10 +736,26 @@ async function activateOwner() {
     const detail = result.out || msg('ownerError');
     throw new Error(`OWNER_REJECTED: ${detail}`);
   }
+  await refreshOwnerStatus();
   setStatus(msg('ownerDone'), 'success');
   el('actionNote').textContent = msg('ownerDone');
 }
 
+async function removeOwner() {
+  if (!adb.adb || !deviceOwnerActive) throw new Error('NOT_CONNECTED');
+  if (!window.confirm(msg('ownerRemoveConfirm'))) return;
+  el('removeOwnerBtn').disabled = true;
+  setStatus(msg('connecting'));
+  const result = await adb.removeDeviceOwner();
+  if (!YZWebAdb.isSuccess(result)) {
+    const detail = result.out || msg('ownerRemoveError');
+    throw new Error(`OWNER_REMOVE_REJECTED: ${detail}`);
+  }
+  await refreshOwnerStatus();
+  if (deviceOwnerActive) throw new Error(`OWNER_REMOVE_REJECTED: ${msg('ownerRemoveError')}`);
+  setStatus(msg('ownerRemoved'), 'success');
+  el('actionNote').textContent = msg('ownerRemoved');
+}
 function userError(error) {
   const value = error?.message || '';
   if (value === 'NOT_CONNECTED') return msg('noDevice');
@@ -640,6 +764,9 @@ function userError(error) {
   if (value === 'ADB_BUSY') return msg('busy');
   if (value === 'LAUNCHER_NOT_READY') return msg('noLauncher');
   if (value === 'ZEMER_FETCH') return msg('zemerFetchFail');
+  if (value === 'NO_RELEASE') return msg('noRelease');
+  if (value === 'STORE_OPEN_FAILED') return msg('storeOpenError');
+  if (value.startsWith('OWNER_REMOVE_REJECTED:')) return `${msg('ownerRemoveError')} ${value.slice('OWNER_REMOVE_REJECTED:'.length)}`;
   if (value.startsWith('OWNER_REJECTED:')) return `${msg('ownerError')} ${value.slice('OWNER_REJECTED:'.length)}`;
   if (error?.name === 'SecurityError' || /permission|denied|authoriz/i.test(value)) return msg('permission');
   return `${msg('operationFailed')} ${value}`;
@@ -666,6 +793,7 @@ el('connectBtn').addEventListener('click', () => handle(async () => {
     throw error;
   }
   setDeviceUi(true, adb.info);
+  await refreshOwnerStatus();
   setStatus(msg('connected'), 'success');
   adb.onDisconnect = () => {
     setDeviceUi(false);
@@ -675,13 +803,19 @@ el('connectBtn').addEventListener('click', () => handle(async () => {
 el('checkBtn').addEventListener('click', () => handle(checkApps));
 el('installBtn').addEventListener('click', () => handle(installSelected));
 el('ownerBtn').addEventListener('click', () => handle(activateOwner));
-
-for (const input of document.querySelectorAll('.apk-file input')) {
-  input.addEventListener('change', () => {
-    refreshFilePickerCopy();
-    if (window.webAdbHasCheck) renderStatuses();
-  });
-}
+el('removeOwnerBtn').addEventListener('click', () => handle(removeOwner));
+el('storeZemer').addEventListener('click', () => handle(async () => {
+  await openStoreApp('zemer');
+  setStatus(msg('storeOpened'), 'warn');
+}));
+el('storeWaze').addEventListener('click', () => handle(async () => {
+  await openStoreApp('waze');
+  setStatus(msg('storeOpened'), 'warn');
+}));
+el('storePulsar').addEventListener('click', () => handle(async () => {
+  await openStoreApp('pulsar');
+  setStatus(msg('storeOpened'), 'warn');
+}));
 
 document.querySelectorAll('.select').forEach((input) => {
   input.addEventListener('change', () => {
@@ -700,7 +834,7 @@ window.addEventListener('installer-language', (event) => {
       el('deviceTitle').textContent = phone || msg('connected');
     }
   }
-  refreshFilePickerCopy();
+  refreshRuntimeCopy();
   if (window.webAdbHasCheck) {
     renderStatuses();
     showFileOptions();
