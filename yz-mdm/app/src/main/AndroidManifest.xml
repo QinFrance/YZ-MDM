@@ -22,7 +22,7 @@
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:label="YiDream"
+        android:label="YZ"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
 
         <!-- Launcher (HOME) + point d'entrée du kiosque -->
