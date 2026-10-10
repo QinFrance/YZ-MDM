@@ -441,6 +441,14 @@ class YZWebAdb {
 const adb = new YZWebAdb();
 const el = (id) => document.getElementById(id);
 const msg = (key) => (STRINGS[language] || STRINGS.fr)[key] || STRINGS.fr[key] || key;
+const YZ_METRICS_URL='https://jqrznghqwdjbizjehzrm.supabase.co/rest/v1/rpc/record_yz_mdm_metric';
+const YZ_METRICS_KEY='sb_publishable_YG9zgjQ5Y56WiBtKdJMQvA_-UBAFv9B';
+function recordYzMetric(metric){
+  if(location.protocol!=='https:'||location.hostname!=='qinfrance.github.io')return;
+  fetch(YZ_METRICS_URL,{method:'POST',headers:{apikey:YZ_METRICS_KEY,Authorization:'Bearer '+YZ_METRICS_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_metric:metric}),keepalive:true}).catch(()=>{});
+}
+recordYzMetric('site_visit');
+el('copyApkDownload')?.addEventListener('click',()=>recordYzMetric('download_click'));
 
 function setStatus(text, kind = '') {
   const status = el('runtimeStatus');
@@ -659,7 +667,8 @@ async function installSelected() {
   const selection = selectedApps();
   zemerFetchFailed = false;
   const missingApps = ['zemer', 'waze', 'pulsar'].filter((id) => selection[id] && !appState[id].installed);
-  const launcherNeedsInstall = !appState.launcher.installed || needsLauncherUpdate();
+  const firstLauncherInstall = !appState.launcher.installed;
+  const launcherNeedsInstall = firstLauncherInstall || needsLauncherUpdate();
   if (launcherNeedsInstall && !buildInfo.releaseReady) {
     showFileOptions();
     throw new Error('LAUNCHER_NOT_READY');
@@ -695,6 +704,7 @@ async function installSelected() {
       try {
         const file = await getLauncherApk();
         await installOne('launcher', file);
+        if (firstLauncherInstall) recordYzMetric('launcher_installed');
       } catch (error) {
         failed.push({ id: 'launcher', error });
       }
@@ -714,6 +724,7 @@ async function installSelected() {
   }
   await checkApps();
   if (failed.length) {
+    recordYzMetric('install_failed');
     const reason = failed.map(({ id, error }) => `${id}: ${error?.message || msg('operationFailed')}`).join(' · ');
     setStatus(reason, 'error');
     el('actionNote').textContent = msg('operationFailed');
@@ -793,6 +804,7 @@ el('connectBtn').addEventListener('click', () => handle(async () => {
     throw error;
   }
   setDeviceUi(true, adb.info);
+  recordYzMetric('webadb_connected');
   await refreshOwnerStatus();
   setStatus(msg('connected'), 'success');
   adb.onDisconnect = () => {
