@@ -64,6 +64,7 @@ class MainActivity : Activity() {
         window.decorView.post {
             maybeOfferHomeLauncher()
             if (intent?.action == UpdateNotificationJob.ACTION_INSTALL_UPDATE) checkForUpdates()
+            else checkForMandatoryUpdate()
         }
     }
 
@@ -128,7 +129,18 @@ class MainActivity : Activity() {
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.allowFileAccess = true
-        webViewClient = WebViewClient()
+        webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView, url: String?) {
+                super.onPageFinished(view, url)
+                if (launcherPreferences.getBoolean("force_normal_mode_pending", false)) {
+                    launcherPreferences.edit().putBoolean("force_normal_mode_pending", false).apply()
+                    view.evaluateJavascript(
+                        "localStorage.setItem('yidream-car-mode-auto','false');window.location.reload()",
+                        null
+                    )
+                }
+            }
+        }
         addJavascriptInterface(WebBridge(), "YZMDM")
         loadUrl("file:///android_asset/index.html")
     }.also { launcherWebView = it }
@@ -229,6 +241,35 @@ class MainActivity : Activity() {
 
     private fun setWazeVisible(visible: Boolean) {
         launcherPreferences.edit().putBoolean("show_waze", visible).apply()
+    }
+
+    private fun checkForMandatoryUpdate() {
+        Thread {
+            try {
+                val buildInfo = readBuildInfo()
+                val latestCode = buildInfo.optLong("versionCode", 0L)
+                val latestName = buildInfo.optString("versionName", "")
+                if (!buildInfo.optBoolean("releaseReady") ||
+                    !buildInfo.optBoolean("forceUpdate") ||
+                    buildInfo.optString("applicationId") != packageName ||
+                    latestCode <= 0L || latestName.isBlank()
+                ) return@Thread
+
+                val installed = packageManager.getPackageInfo(packageName, 0)
+                if (latestCode <= packageVersionCode(installed)) return@Thread
+
+                launcherPreferences.edit().putBoolean("force_normal_mode_pending", true).apply()
+                runOnUiThread {
+                    launcherWebView?.evaluateJavascript(
+                        "localStorage.setItem('yidream-car-mode-auto','false')",
+                        null
+                    )
+                    checkForUpdates()
+                }
+            } catch (_: Exception) {
+                // The normal launcher remains usable; retry on the next app launch.
+            }
+        }.start()
     }
 
     private fun checkForUpdates() {

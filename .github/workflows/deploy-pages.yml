@@ -1,14 +1,13 @@
 name: Build and publish YZ MDM WebADB
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - 'web-installer/**'
-      - 'yz-mdm/**'
-      - '.github/workflows/deploy-pages.yml'
-      - 'README.md'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: Require older YZ installations to update when they next run
+        required: true
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -97,7 +96,8 @@ jobs:
             "applicationId": "com.yz.mdm",
             "versionName": "$version_name",
             "versionCode": $version_code,
-            "releaseReady": $ready
+            "releaseReady": $ready,
+            "forceUpdate": ${{ inputs.force_update }}
           }
           JSON
           touch web-installer/dist/.nojekyll
