@@ -11,6 +11,17 @@ object Config {
     val EXTRA_ALLOWED_PACKAGES = listOf<String>()
 
     /**
+     * Applications système facultatives à masquer dans le mode appareil dédié.
+     * Google App héberge Assistant, recherche et commandes vocales. Les appareils qui ont
+     * un paquet Assistant séparé le masquent aussi. Google Play Services et les composants
+     * Android essentiels ne sont volontairement pas ciblés.
+     */
+    val OPTIONAL_BACKGROUND_SYSTEM_PACKAGES = listOf(
+        "com.google.android.googlequicksearchbox",
+        "com.google.android.apps.googleassistant",
+    )
+
+    /**
      * true = interdit le débogage USB. Laissé à false afin que l'installation et la maintenance
      * WebADB restent possibles. Il peut être activé après configuration finale de l'appareil.
      */

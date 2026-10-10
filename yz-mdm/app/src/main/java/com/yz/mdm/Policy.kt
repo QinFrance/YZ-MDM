@@ -20,6 +20,7 @@ object Kiosk {
 object Policy {
     private const val PREFS_NAME = "yidream_launcher"
     private const val SUSPENDED_APPS_KEY = "dedicated_suspended_packages"
+    private const val HIDDEN_SYSTEM_APPS_KEY = "dedicated_hidden_system_packages"
 
     private val INSTALL_RESTRICTIONS = listOf(
         UserManager.DISALLOW_INSTALL_APPS,
@@ -102,9 +103,9 @@ object Policy {
     }
 
     /**
-     * Met en veille les applications tierces qui ne font pas partie du lecteur dédié.
-     * Les applications système ne sont jamais ciblées. Chaque application déjà suspendue
-     * par quelqu'un d'autre est laissée telle quelle et seules nos suspensions sont réversibles.
+     * Met en veille les applications tierces hors du lecteur dédié et masque seulement
+     * les applications système explicitement listées dans Config. Rien d'autre du système
+     * Android n'est modifié. Les changements faits ici sont réversibles à la sortie du mode.
      */
     fun suspendNonEssentialApps(c: Context) {
         if (!isOwner(c)) return
@@ -124,15 +125,51 @@ object Policy {
                 .distinct()
                 .toList()
         }.getOrDefault(emptyList())
-        if (candidates.isEmpty()) return
-        val failed = runCatching {
-            d.setPackagesSuspended(admin, candidates.toTypedArray(), true).toSet()
-        }.getOrElse { candidates.toSet() }
-        val newlyManaged = candidates.filterNot { it in failed }
-        if (newlyManaged.isNotEmpty()) {
-            preferences.edit()
-                .putStringSet(SUSPENDED_APPS_KEY, (previouslyManaged + newlyManaged).toSet())
-                .apply()
+        if (candidates.isNotEmpty()) {
+            val failed = runCatching {
+                d.setPackagesSuspended(admin, candidates.toTypedArray(), true).toSet()
+            }.getOrElse { candidates.toSet() }
+            val newlyManaged = candidates.filterNot { it in failed }
+            if (newlyManaged.isNotEmpty()) {
+                preferences.edit()
+                    .putStringSet(SUSPENDED_APPS_KEY, (previouslyManaged + newlyManaged).toSet())
+                    .commit()
+            }
+        }
+        hideOptionalSystemApps(c, d, admin, allowed, preferences)
+    }
+
+    private fun hideOptionalSystemApps(
+        c: Context,
+        d: DevicePolicyManager,
+        admin: ComponentName,
+        allowed: Set<String>,
+        preferences: android.content.SharedPreferences,
+    ) {
+        val systemPackages = runCatching {
+            c.packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+                .asSequence()
+                .filter { it.flags and ApplicationInfo.FLAG_SYSTEM != 0 }
+                .map { it.packageName }
+                .toSet()
+        }.getOrDefault(emptySet())
+        val managed = preferences.getStringSet(HIDDEN_SYSTEM_APPS_KEY, emptySet())
+            ?.toSet().orEmpty()
+        val newlyManaged = managed.toMutableSet()
+
+        Config.OPTIONAL_BACKGROUND_SYSTEM_PACKAGES
+            .asSequence()
+            .filter { it in systemPackages && it !in allowed }
+            .forEach { packageName ->
+                val wasManaged = packageName in managed
+                val alreadyHidden = runCatching { d.isApplicationHidden(admin, packageName) }.getOrDefault(true)
+                if (alreadyHidden && !wasManaged) return@forEach
+                val hidden = runCatching { d.setApplicationHidden(admin, packageName, true) }.getOrDefault(false)
+                if (hidden) newlyManaged += packageName
+            }
+
+        if (newlyManaged != managed) {
+            preferences.edit().putStringSet(HIDDEN_SYSTEM_APPS_KEY, newlyManaged).commit()
         }
     }
 
@@ -143,6 +180,12 @@ object Policy {
             d.setPackagesSuspended(admin, managed.toTypedArray(), false)
         }
         preferences.edit().remove(SUSPENDED_APPS_KEY).apply()
+
+        val hiddenSystemApps = preferences.getStringSet(HIDDEN_SYSTEM_APPS_KEY, emptySet())?.toSet().orEmpty()
+        hiddenSystemApps.forEach { packageName ->
+            runCatching { d.setApplicationHidden(admin, packageName, false) }
+        }
+        preferences.edit().remove(HIDDEN_SYSTEM_APPS_KEY).apply()
     }
 
     /** Lève les blocages d'installation pour les mises à jour ADB/WebADB. */
