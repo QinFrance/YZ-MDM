@@ -52,16 +52,16 @@ class UpdateNotificationJob : JobService() {
             if (manager.getNotificationChannel(CHANNEL_ID) != null) return
             val language = preferredLanguage(context)
             val channelName = when (language) {
-                "en" -> "YiDream updates"
-                "he" -> "עדכוני YiDream"
-                "yi" -> "YiDream־דערהייַנטיקונגען"
-                else -> "Mises à jour YiDream"
+                "en" -> "YZ updates"
+                "he" -> "עדכוני YZ"
+                "yi" -> "YZ־דערהייַנטיקונגען"
+                else -> "Mises à jour YZ"
             }
             val channelDescription = when (language) {
-                "en" -> "Alerts when a new YiDream version is ready."
-                "he" -> "התראות כשגרסה חדשה של YiDream זמינה."
-                "yi" -> "באַנאַכריכטונגען ווען אַ נײַע YiDream־ווערסיע איז גרייט."
-                else -> "Alertes lorsqu’une nouvelle version de YiDream est disponible."
+                "en" -> "Alerts when a new YZ version is ready."
+                "he" -> "התראות כשגרסה חדשה של YZ זמינה."
+                "yi" -> "באַנאַכריכטונגען ווען אַ נײַע YZ־ווערסיע איז גרייט."
+                else -> "Alertes lorsqu’une nouvelle version de YZ est disponible."
             }
             manager.createNotificationChannel(
                 NotificationChannel(CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_DEFAULT).apply {
@@ -180,22 +180,22 @@ class UpdateNotificationJob : JobService() {
 
         private fun notificationCopy(language: String, version: String): List<String> = when (language) {
             "en" -> listOf(
-                "YiDream update available",
+                "YZ update available",
                 "Version " + version + " is ready to install.",
                 "Install"
             )
             "he" -> listOf(
-                "עדכון YiDream חדש זמין",
+                "עדכון YZ חדש זמין",
                 "גרסה " + version + " מוכנה להתקנה.",
                 "התקנה"
             )
             "yi" -> listOf(
-                "אַ נײַע YiDream־דערהייַנטיקונג איז גרייט",
+                "אַ נײַע YZ־דערהייַנטיקונג איז גרייט",
                 "די ווערסיע " + version + " איז גרייט צו אינסטאַלירן.",
                 "אינסטאַלירן"
             )
             else -> listOf(
-                "Nouvelle mise à jour YiDream",
+                "Nouvelle mise à jour YZ",
                 "La version " + version + " est prête à installer.",
                 "Installer"
             )
