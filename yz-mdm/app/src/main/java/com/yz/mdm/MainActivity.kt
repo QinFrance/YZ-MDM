@@ -69,10 +69,13 @@ class MainActivity : Activity() {
         super.onResume()
         applyImmersiveMode()
         if (notificationPermissionPending && hasWindowFocus()) window.decorView.post { requestNotificationPermissionIfNeeded() }
-        if (Policy.isOwner(this) && !Kiosk.suspended) {
-            val am = getSystemService(ActivityManager::class.java)
-            if (am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) {
-                runCatching { startLockTask() }
+        if (Policy.isOwner(this)) {
+            Policy.suspendNonEssentialApps(this)
+            if (!Kiosk.suspended) {
+                val am = getSystemService(ActivityManager::class.java)
+                if (am.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) {
+                    runCatching { startLockTask() }
+                }
             }
         }
     }
