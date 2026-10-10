@@ -2,6 +2,8 @@ package com.yz.mdm
 
 import android.app.admin.DevicePolicyManager
 import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.IntentFilter
@@ -16,6 +18,9 @@ object Kiosk {
 }
 
 object Policy {
+    private const val PREFS_NAME = "yidream_launcher"
+    private const val SUSPENDED_APPS_KEY = "dedicated_suspended_packages"
+
     private val INSTALL_RESTRICTIONS = listOf(
         UserManager.DISALLOW_INSTALL_APPS,
         UserManager.DISALLOW_UNINSTALL_APPS,
@@ -92,7 +97,52 @@ object Policy {
         if (Build.VERSION.SDK_INT >= 30) runCatching {
             d.setUserControlDisabledPackages(admin, Config.ZEMER_PACKAGES)
         }
+        suspendNonEssentialApps(c)
         return true
+    }
+
+    /**
+     * Met en veille les applications tierces qui ne font pas partie du lecteur dédié.
+     * Les applications système ne sont jamais ciblées. Chaque application déjà suspendue
+     * par quelqu'un d'autre est laissée telle quelle et seules nos suspensions sont réversibles.
+     */
+    fun suspendNonEssentialApps(c: Context) {
+        if (!isOwner(c)) return
+        val d = dpm(c)
+        val admin = AdminReceiver.component(c)
+        val allowed = allowedPackages(c).toSet()
+        val preferences = c.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val previouslyManaged = preferences.getStringSet(SUSPENDED_APPS_KEY, emptySet())
+            ?.toSet().orEmpty()
+        val candidates = runCatching {
+            c.packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+                .asSequence()
+                .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 }
+                .map { it.packageName }
+                .filter { it !in allowed }
+                .filter { packageName -> runCatching { !d.isPackageSuspended(admin, packageName) }.getOrDefault(false) }
+                .distinct()
+                .toList()
+        }.getOrDefault(emptyList())
+        if (candidates.isEmpty()) return
+        val failed = runCatching {
+            d.setPackagesSuspended(admin, candidates.toTypedArray(), true).toSet()
+        }.getOrElse { candidates.toSet() }
+        val newlyManaged = candidates.filterNot { it in failed }
+        if (newlyManaged.isNotEmpty()) {
+            preferences.edit()
+                .putStringSet(SUSPENDED_APPS_KEY, (previouslyManaged + newlyManaged).toSet())
+                .apply()
+        }
+    }
+
+    private fun resumeManagedApps(c: Context, d: DevicePolicyManager, admin: ComponentName) {
+        val preferences = c.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val managed = preferences.getStringSet(SUSPENDED_APPS_KEY, emptySet())?.toSet().orEmpty()
+        if (managed.isNotEmpty()) runCatching {
+            d.setPackagesSuspended(admin, managed.toTypedArray(), false)
+        }
+        preferences.edit().remove(SUSPENDED_APPS_KEY).apply()
     }
 
     /** Lève les blocages d'installation pour les mises à jour ADB/WebADB. */
@@ -108,6 +158,7 @@ object Policy {
         if (!isOwner(c)) return
         val d = dpm(c)
         val admin = AdminReceiver.component(c)
+        resumeManagedApps(c, d, admin)
         (INSTALL_RESTRICTIONS + OTHER_RESTRICTIONS + UserManager.DISALLOW_DEBUGGING_FEATURES)
             .forEach { d.clearUserRestriction(admin, it) }
         d.clearPackagePersistentPreferredActivities(admin, c.packageName)
