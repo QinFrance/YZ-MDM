@@ -113,8 +113,20 @@ object Policy {
         val admin = AdminReceiver.component(c)
         val allowed = allowedPackages(c).toSet()
         val preferences = c.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val previouslyManaged = preferences.getStringSet(SUSPENDED_APPS_KEY, emptySet())
+        var previouslyManaged = preferences.getStringSet(SUSPENDED_APPS_KEY, emptySet())
             ?.toSet().orEmpty()
+
+        // An earlier policy may have suspended a music/navigation app before it was
+        // added to the allowlist. Restore those allowlisted apps before suspending others.
+        val allowedButSuspended = previouslyManaged.filter { it in allowed }
+        if (allowedButSuspended.isNotEmpty()) {
+            val failedToRestore = runCatching {
+                d.setPackagesSuspended(admin, allowedButSuspended.toTypedArray(), false).toSet()
+            }.getOrElse { allowedButSuspended.toSet() }
+            previouslyManaged = previouslyManaged - allowedButSuspended.filterNot { it in failedToRestore }.toSet()
+            preferences.edit().putStringSet(SUSPENDED_APPS_KEY, previouslyManaged).commit()
+        }
+
         val candidates = runCatching {
             c.packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
                 .asSequence()
