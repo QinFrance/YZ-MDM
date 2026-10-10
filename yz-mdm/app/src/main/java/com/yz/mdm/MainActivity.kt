@@ -108,7 +108,14 @@ class MainActivity : Activity() {
         val battery = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         val rawLevel = battery?.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1) ?: -1
         val scale = battery?.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1) ?: -1
-        val batteryPercent = if (rawLevel >= 0 && scale > 0) (rawLevel * 100f / scale).toInt() else -1
+        val batteryPercent = if (rawLevel >= 0 && scale > 0) {
+            (rawLevel * 100f / scale).toInt()
+        } else {
+            runCatching {
+                getSystemService(android.os.BatteryManager::class.java)
+                    .getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            }.getOrDefault(-1).takeIf { it in 0..100 } ?: -1
+        }
         val status = battery?.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) ?: -1
         val charging = status == android.os.BatteryManager.BATTERY_STATUS_CHARGING || status == android.os.BatteryManager.BATTERY_STATUS_FULL
         val connectivity = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -116,6 +123,7 @@ class MainActivity : Activity() {
         val capabilities = if (activeNetwork != null) connectivity.getNetworkCapabilities(activeNetwork) else null
         return JSONObject()
             .put("batteryPercent", batteryPercent)
+            .put("timeMillis", System.currentTimeMillis())
             .put("charging", charging)
             .put("wifi", capabilities?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) == true)
             .put("mobile", capabilities?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) == true)
