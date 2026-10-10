@@ -445,7 +445,7 @@ const YZ_METRICS_URL='https://jqrznghqwdjbizjehzrm.supabase.co/rest/v1/rpc/recor
 const YZ_METRICS_KEY='sb_publishable_YG9zgjQ5Y56WiBtKdJMQvA_-UBAFv9B';
 function recordYzMetric(metric){
   if(location.protocol!=='https:'||location.hostname!=='qinfrance.github.io')return;
-  fetch(YZ_METRICS_URL,{method:'POST',headers:{apikey:YZ_METRICS_KEY,Authorization:'Bearer '+YZ_METRICS_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_metric:metric}),keepalive:true}).catch(()=>{});
+  fetch(YZ_METRICS_URL,{method:'POST',headers:{apikey:YZ_METRICS_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_metric:metric}),keepalive:true}).catch(()=>{});
 }
 recordYzMetric('site_visit');
 el('copyApkDownload')?.addEventListener('click',()=>recordYzMetric('download_click'));
