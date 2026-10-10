@@ -142,7 +142,7 @@ class MainActivity : Activity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         applyImmersiveMode()
-        launcherWebView?.evaluateJavascript("window.dispatchEvent(new Event('orientationchange'));window.dispatchEvent(new Event('resize'))", null)
+        launcherWebView?.evaluateJavascript("window.dispatchEvent(new Event('orientationchange'));window.dispatchEvent(new Event('resize'));window.dispatchEvent(new Event('yz-system-appearance-changed'))", null)
     }
 
     private fun applyImmersiveMode() {
