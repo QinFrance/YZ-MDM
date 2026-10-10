@@ -611,6 +611,8 @@ class MainActivity : Activity() {
         val keyCode = when (command) {
             "play" -> KeyEvent.KEYCODE_MEDIA_PLAY
             "pause" -> KeyEvent.KEYCODE_MEDIA_PAUSE
+            "previous" -> KeyEvent.KEYCODE_MEDIA_PREVIOUS
+            "next" -> KeyEvent.KEYCODE_MEDIA_NEXT
             else -> return
         }
         val audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
