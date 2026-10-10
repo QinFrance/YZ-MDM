@@ -5,6 +5,8 @@ import android.app.ActivityManager
 import android.app.AlertDialog
 import android.app.PendingIntent
 import android.Manifest
+import android.media.AudioManager
+import android.view.KeyEvent
 import android.app.role.RoleManager
 import android.content.res.Configuration
 import android.view.View
@@ -527,6 +529,11 @@ class MainActivity : Activity() {
 
     inner class WebBridge {
         @JavascriptInterface
+        fun sendMediaButton(command: String) = runOnUiThread {
+            this@MainActivity.sendMediaButton(command)
+        }
+
+        @JavascriptInterface
         fun isDeviceOwner(): Boolean = Policy.isOwner(this@MainActivity)
 
         @JavascriptInterface
@@ -597,6 +604,19 @@ class MainActivity : Activity() {
         @JavascriptInterface
         fun submitExitCode(code: String) = runOnUiThread {
             toast("La validation du code quotidien n’est pas encore connectée")
+        }
+    }
+
+    private fun sendMediaButton(command: String) {
+        val keyCode = when (command) {
+            "play" -> KeyEvent.KEYCODE_MEDIA_PLAY
+            "pause" -> KeyEvent.KEYCODE_MEDIA_PAUSE
+            else -> return
+        }
+        val audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        runCatching {
+            audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, keyCode))
+            audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
         }
     }
 
