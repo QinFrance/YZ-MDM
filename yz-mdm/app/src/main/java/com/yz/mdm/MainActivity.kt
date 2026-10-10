@@ -189,9 +189,9 @@ class MainActivity : Activity() {
         }
         launcherPreferences.edit().putBoolean("home_launcher_prompt_shown", true).apply()
         val dialog = AlertDialog.Builder(this)
-            .setTitle(homeSetupText("Utiliser YiDream comme écran d’accueil ?", "Use YiDream as your home screen?", "להשתמש ב‑YiDream כמסך הבית?", "YiDream אַלס דײַן היים־עקראַן נוצן?"))
-            .setMessage(homeSetupText("YiDream peut remplacer l’écran d’accueil pour réunir musique et navigation. Android te demandera de confirmer ce choix. Tu pourras le modifier dans les paramètres du téléphone.", "YiDream can replace the home screen to keep music and navigation together. Android will ask you to confirm. You can change this later in your phone settings.", "YiDream יכול להחליף את מסך הבית כדי לרכז מוזיקה וניווט. Android יבקש ממך לאשר. אפשר לשנות זאת בהגדרות הטלפון.", "YiDream קען פֿאַרבײַטן דעם היים־עקראַן, כּדי צונויפֿצושטעלן מוזיק און וועגווײַזער. Android וועט בעטן דײַן באַשטעטיקונג. מ׳קען דאָס שפּעטער ענדערן אין די טעלעפֿאָן־אײַנשטעלונגען."))
-            .setPositiveButton(homeSetupText("Choisir YiDream", "Choose YiDream", "לבחור ב‑YiDream", "YiDream אויסקלײַבן")) { _, _ -> requestHomeLauncherRole() }
+            .setTitle(homeSetupText("Utiliser YZ comme écran d’accueil ?", "Use YZ as your home screen?", "להשתמש ב‑YZ כמסך הבית?", "YZ אַלס דײַן היים־עקראַן נוצן?"))
+            .setMessage(homeSetupText("YZ peut remplacer l’écran d’accueil pour réunir musique et navigation. Android te demandera de confirmer ce choix. Tu pourras le modifier dans les paramètres du téléphone.", "YZ can replace the home screen to keep music and navigation together. Android will ask you to confirm. You can change this later in your phone settings.", "YZ יכול להחליף את מסך הבית כדי לרכז מוזיקה וניווט. Android יבקש ממך לאשר. אפשר לשנות זאת בהגדרות הטלפון.", "YZ קען פֿאַרבײַטן דעם היים־עקראַן, כּדי צונויפֿצושטעלן מוזיק און וועגווײַזער. Android וועט בעטן דײַן באַשטעטיקונג. מ׳קען דאָס שפּעטער ענדערן אין די טעלעפֿאָן־אײַנשטעלונגען."))
+            .setPositiveButton(homeSetupText("Choisir YZ", "Choose YZ", "לבחור ב‑YZ", "YZ אויסקלײַבן")) { _, _ -> requestHomeLauncherRole() }
             .setNegativeButton(homeSetupText("Plus tard", "Later", "מאוחר יותר", "שפּעטער"), null)
             .create()
         notificationPermissionPending = true
@@ -249,7 +249,7 @@ class MainActivity : Activity() {
                 val installedCode = packageVersionCode(installed)
                 if (latestCode <= installedCode) {
                     runOnUiThread {
-                        toast("YiDream est déjà à jour · v${installed.versionName}")
+                        toast("YZ est déjà à jour · v${installed.versionName}")
                     }
                     return@Thread
                 }
@@ -258,7 +258,7 @@ class MainActivity : Activity() {
                 val archive = packageManager.getPackageArchiveInfo(apk.absolutePath, 0)
                     ?: throw IOException("Le fichier reçu n’est pas un APK valide.")
                 if (archive.packageName != packageName || packageVersionCode(archive) != latestCode) {
-                    throw IOException("L’APK ne correspond pas à YiDream ou à la version annoncée.")
+                    throw IOException("L’APK ne correspond pas à YZ ou à la version annoncée.")
                 }
 
                 val owner = Policy.isOwner(this)
@@ -266,7 +266,7 @@ class MainActivity : Activity() {
                     !packageManager.canRequestPackageInstalls()
                 ) {
                     runOnUiThread {
-                        toast("Autorise YiDream à installer des applications, puis relance.")
+                        toast("Autorise YZ à installer des applications, puis relance.")
                         runCatching {
                             startActivity(
                                 Intent(
@@ -287,7 +287,7 @@ class MainActivity : Activity() {
                 }
                 startUpdateInstall(apk)
                 restoreOwnerPolicy = false
-                runOnUiThread { toast("Installation de YiDream v$latestName lancée") }
+                runOnUiThread { toast("Installation de YZ v$latestName lancée") }
             } catch (error: Exception) {
                 if (restoreOwnerPolicy) {
                     runOnUiThread {
@@ -441,7 +441,7 @@ class MainActivity : Activity() {
         }
     }
 
-    // ---- Accès administrateur : 7 appuis sur le titre YiDream dans le tiroir ----
+    // ---- Accès administrateur : 7 appuis sur le titre YZ dans le tiroir ----
 
     private fun onTitleTap() {
         val now = SystemClock.elapsedRealtime()
@@ -486,7 +486,7 @@ class MainActivity : Activity() {
             "Retirer le Device Owner (tout débloquer)",
             "Fermer",
         )
-        AlertDialog.Builder(this).setTitle("Administration YiDream").setItems(items) { _, which ->
+        AlertDialog.Builder(this).setTitle("Administration YZ").setItems(items) { _, which ->
             when (which) {
                 0 -> {
                     Kiosk.suspended = false
@@ -511,7 +511,7 @@ class MainActivity : Activity() {
     private fun confirmRelease() {
         AlertDialog.Builder(this)
             .setTitle("Retirer le Device Owner ?")
-            .setMessage("Toutes les restrictions seront levées et YiDream cessera de gérer l’appareil.")
+            .setMessage("Toutes les restrictions seront levées et YZ cessera de gérer l’appareil.")
             .setPositiveButton("Retirer") { _, _ ->
                 Kiosk.suspended = true
                 runCatching { stopLockTask() }
@@ -525,6 +525,26 @@ class MainActivity : Activity() {
     inner class WebBridge {
         @JavascriptInterface
         fun isDeviceOwner(): Boolean = Policy.isOwner(this@MainActivity)
+
+        @JavascriptInterface
+        fun isSystemDarkMode(): Boolean =
+            (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+
+        @JavascriptInterface
+        fun shouldOfferDedicatedSetup(): Boolean =
+            !Policy.isOwner(this@MainActivity) &&
+                !launcherPreferences.getBoolean("dedicated_setup_handled", false)
+
+        @JavascriptInterface
+        fun dismissDedicatedSetup() {
+            launcherPreferences.edit().putBoolean("dedicated_setup_handled", true).apply()
+        }
+
+        @JavascriptInterface
+        fun openDedicatedSetupGuide() = runOnUiThread {
+            launcherPreferences.edit().putBoolean("dedicated_setup_handled", true).apply()
+            startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://qinfrance.github.io/YZ-MDM/")))
+        }
 
         @JavascriptInterface
         fun isWazeVisible(): Boolean = this@MainActivity.isWazeVisible()
