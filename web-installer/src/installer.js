@@ -13,13 +13,13 @@ const OWNER_COMPONENT = 'com.yz.mdm/.AdminReceiver';
 const STRINGS = {
   fr: {
     filesTitle:'Installation automatique',
-    filesHint:'Les applications déjà installées sont conservées. YiDream et Zemer se téléchargent automatiquement ; l’installation de Waze et Pulsar passe par Google Play.',
+    filesHint:'Les applications déjà installées sont conservées. YiDream s’installe ou se met à jour automatiquement. Zemer récupère la dernière version officielle sur GitHub et se met à jour si nécessaire ; Waze et Pulsar passent par Google Play.',
     chooseApk:'Choisir un APK',
     noFileSelected:'Aucun fichier choisi',
     launcherName:'YiDream Launcher',
     launcherFileHint:'APK signé du launcher',
     zemerName:'Zemer',
-    zemerFileHint:'APK officiel · installation manuelle',
+    zemerFileHint:'Dernière version officielle · automatique',
     wazeName:'Waze',
     wazeFileHint:'APK officiel',
     pulsarName:'Pulsar',
@@ -88,13 +88,13 @@ const STRINGS = {
   },
   en: {
     filesTitle:'Automatic installation',
-    filesHint:'Apps already installed are kept. YiDream and Zemer download automatically; Waze and Pulsar installation goes through Google Play.',
+    filesHint:'Apps already installed are kept. YiDream installs or updates automatically. Zemer gets the latest official GitHub release and updates when needed; Waze and Pulsar go through Google Play.',
     chooseApk:'Choose APK',
     noFileSelected:'No file selected',
     launcherName:'YiDream Launcher',
     launcherFileHint:'Signed launcher APK',
     zemerName:'Zemer',
-    zemerFileHint:'Official APK · manual install',
+    zemerFileHint:'Latest official version · automatic',
     wazeName:'Waze',
     wazeFileHint:'Official APK',
     pulsarName:'Pulsar',
@@ -163,13 +163,13 @@ const STRINGS = {
   },
   he: {
     filesTitle:'אפליקציות להוספה',
-    filesHint:'אפליקציות שכבר מותקנות יישארו. YiDream ו‑Zemer יורדו אוטומטית; התקנת Waze ו‑Pulsar מתבצעת דרך Google Play.',
+    filesHint:'אפליקציות שכבר מותקנות יישארו. YiDream יותקן או יעודכן אוטומטית. Zemer יוריד את הגרסה הרשמית האחרונה מ‑GitHub ויעודכן בעת הצורך; Waze ו‑Pulsar דרך Google Play.',
     chooseApk:'בחירת APK',
     noFileSelected:'לא נבחר קובץ',
     launcherName:'YiDream Launcher',
     launcherFileHint:'קובץ APK חתום של המשגר',
     zemerName:'Zemer',
-    zemerFileHint:'APK רשמי · התקנה ידנית',
+    zemerFileHint:'הגרסה הרשמית האחרונה · אוטומטי',
     wazeName:'Waze',
     wazeFileHint:'APK רשמי',
     pulsarName:'Pulsar',
@@ -238,13 +238,13 @@ const STRINGS = {
   },
   yi: {
     filesTitle:'אַפּס צו צולייגן',
-    filesHint:'שוין אינסטאַלירטע אַפּס בלײַבן. YiDream און Zemer ווערן אראפגעלאָדן אויטאָמאַטיש; Waze און Pulsar אינסטאַלאַציע גייט דורך Google Play.',
+    filesHint:'שוין אינסטאַלירטע אַפּס בלײַבן. YiDream ווערט אויטאָמאַטיש אינסטאַלירט אָדער דערהײַנטיקט. Zemer נעמט די לעצטע אָפֿיציעלע GitHub ווערסיע און דערהײַנטיקט זי ווען נייטיק; Waze און Pulsar ווערן אינסטאַלירט דורך Google Play.',
     chooseApk:'קלײַבן APK',
     noFileSelected:'קיין טעקע נישט אויסגעקליבן',
     launcherName:'YiDream Launcher',
     launcherFileHint:'אונטערגעשריבענער Launcher APK',
     zemerName:'Zemer',
-    zemerFileHint:'אָפֿיציעלער APK · מאַנועלע אינסטאַלאַציע',
+    zemerFileHint:'לעצטע אָפֿיציעלע ווערסיע · אויטאָמאַטיש',
     wazeName:'Waze',
     wazeFileHint:'אָפֿיציעלער APK',
     pulsarName:'Pulsar',
@@ -318,6 +318,8 @@ let buildInfo = { releaseReady: false };
 let appState = null;
 let deviceOwnerActive = false;
 let zemerFetchFailed = false;
+let latestZemerRelease = null;
+let latestZemerReleaseCheckedAt = 0;
 
 class YZWebAdb {
   constructor() {
@@ -541,6 +543,9 @@ function renderStatuses() {
     } else if (id === 'launcher' && needsLauncherUpdate()) {
       status.textContent = `${msg('updateAvailable')} · v${appState.launcher.version || appState.launcher.versionCode} → v${buildInfo.versionName}`;
       status.className = 'result warn';
+    } else if (id === 'zemer' && appState.zemer?.installed && appState.zemer.latestVersionCode > appState.zemer.versionCode) {
+      status.textContent = `${msg('updateAvailable')} · v${appState.zemer.versionCode} → v${appState.zemer.latestVersionCode}`;
+      status.className = 'result warn';
     } else if (appState[id]?.installed) {
       const version = appState[id]?.version ? ` · v${appState[id].version}` : '';
       status.textContent = `${msg('statusCurrent')}${version}`;
@@ -599,6 +604,14 @@ async function checkApps() {
     el('runtimeProgress').hidden = true;
   }
   appState = Object.fromEntries(entries);
+  try {
+    latestZemerRelease = await fetchLatestZemerRelease(true);
+    latestZemerReleaseCheckedAt = Date.now();
+    appState.zemer.latestVersionCode = latestZemerRelease.versionCode;
+  } catch {
+    latestZemerRelease = null;
+    latestZemerReleaseCheckedAt = Date.now();
+  }
   window.webAdbHasCheck = true;
   renderStatuses();
   await refreshOwnerStatus();
@@ -611,20 +624,37 @@ async function checkApps() {
   setStep(2);
 }
 
-async function fetchLatestZemer() {
+async function fetchLatestZemerRelease(force = false) {
+  if (!force && latestZemerRelease && Date.now() - latestZemerReleaseCheckedAt < 5 * 60_000) return latestZemerRelease;
   const response = await fetch('https://api.github.com/repos/ZemerTeam/zemer-app/releases/latest', {
     headers: { Accept: 'application/vnd.github+json' },
     cache: 'no-store',
   });
   if (!response.ok) throw new Error('ZEMER_RELEASE');
   const release = await response.json();
-  const asset = release.assets?.find((item) => /\.apk$/i.test(item.name));
+  const asset = release.assets?.find((item) => /\.apk$/i.test(item.name) && /universal/i.test(item.name))
+    || release.assets?.find((item) => /\.apk$/i.test(item.name));
   if (!asset?.browser_download_url) throw new Error('ZEMER_NO_APK');
-  const apk = await fetch(asset.browser_download_url);
+  const versionCode = Number(String(release.tag_name || '').match(/\d+/)?.[0] || 0);
+  if (!versionCode) throw new Error('ZEMER_RELEASE');
+  const info = { versionCode, assetUrl: asset.browser_download_url, assetName: asset.name, digest: asset.digest || '' };
+  latestZemerRelease = info;
+  latestZemerReleaseCheckedAt = Date.now();
+  return info;
+}
+
+async function fetchLatestZemer(releaseInfo = null) {
+  const release = releaseInfo || await fetchLatestZemerRelease(true);
+  const apk = await fetch(release.assetUrl, { cache: 'no-store' });
   if (!apk.ok) throw new Error('ZEMER_DOWNLOAD');
   const blob = await apk.blob();
   if (!blob.type.includes('android') && blob.size < 100_000) throw new Error('ZEMER_DOWNLOAD');
-  return blob;
+  if (release.digest?.startsWith('sha256:') && globalThis.crypto?.subtle) {
+    const hash = await globalThis.crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
+    const actual = [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+    if (actual.toLowerCase() !== release.digest.slice(7).toLowerCase()) throw new Error('ZEMER_DIGEST');
+  }
+  return new File([blob], release.assetName, { type: 'application/vnd.android.package-archive' });
 }
 
 async function getLauncherApk() {
@@ -666,7 +696,21 @@ async function installSelected() {
   if (!adb.adb || !appState) throw new Error('NOT_CONNECTED');
   const selection = selectedApps();
   zemerFetchFailed = false;
-  const missingApps = ['zemer', 'waze', 'pulsar'].filter((id) => selection[id] && !appState[id].installed);
+  let zemerRelease = latestZemerRelease;
+  if (selection.zemer) {
+    try {
+      zemerRelease = await fetchLatestZemerRelease(true);
+      appState.zemer.latestVersionCode = zemerRelease.versionCode;
+    } catch {
+      zemerRelease = null;
+    }
+  }
+  const zemerNeedsInstall = selection.zemer && (!appState.zemer.installed ||
+    (zemerRelease && zemerRelease.versionCode > appState.zemer.versionCode));
+  const missingApps = [
+    ...(zemerNeedsInstall ? ['zemer'] : []),
+    ...['waze', 'pulsar'].filter((id) => selection[id] && !appState[id].installed),
+  ];
   const firstLauncherInstall = !appState.launcher.installed;
   const launcherNeedsInstall = firstLauncherInstall || needsLauncherUpdate();
   if (launcherNeedsInstall && !buildInfo.releaseReady) {
@@ -689,7 +733,7 @@ async function installSelected() {
     for (const id of autoApps) {
       setProgress(id === 'zemer' ? msg('zemerRelease') : msg('installStart'), completed, total, true);
       try {
-        const file = await fetchLatestZemer();
+        const file = await fetchLatestZemer(zemerRelease);
         setProgress(`${msg('zemerName')} · ${msg('installStart')}`, completed, total, true);
         await installOne(id, file);
       } catch (error) {
