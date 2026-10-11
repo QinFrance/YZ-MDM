@@ -44,10 +44,7 @@ class MainActivity : Activity() {
     private val updateInProgress = AtomicBoolean(false)
     private val launcherPreferences by lazy { getSharedPreferences("yidream_launcher", MODE_PRIVATE) }
     private var launcherWebView: WebView? = null
-    private var notificationPermissionPending = false
-
     companion object {
-        private const val REQUEST_NOTIFICATION_PERMISSION = 7012
         private const val BUILD_INFO_URL = "https://qinfrance.github.io/YZ-MDM/build-info.json"
         private const val APK_URL = "https://qinfrance.github.io/YZ-MDM/downloads/yz-mdm.apk"
         private const val MAX_APK_BYTES = 300L * 1024L * 1024L
@@ -71,7 +68,7 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         applyImmersiveMode()
-        if (notificationPermissionPending && hasWindowFocus()) window.decorView.post { requestNotificationPermissionIfNeeded() }
+        launcherWebView?.evaluateJavascript("window.dispatchEvent(new Event('yz-system-appearance-changed'))", null)
         if (Policy.isOwner(this)) {
             Policy.suspendNonEssentialApps(this)
             if (!Kiosk.suspended) {
@@ -87,21 +84,6 @@ class MainActivity : Activity() {
         super.onNewIntent(intent)
         setIntent(intent)
         if (intent.action == UpdateNotificationJob.ACTION_INSTALL_UPDATE) checkForUpdates()
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_NOTIFICATION_PERMISSION && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
-            UpdateNotificationJob.checkNow(this)
-        }
-    }
-
-    private fun requestNotificationPermissionIfNeeded() {
-        notificationPermissionPending = false
-        if (Build.VERSION.SDK_INT < 33 || launcherPreferences.getBoolean("notification_permission_asked", false)) return
-        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) return
-        launcherPreferences.edit().putBoolean("notification_permission_asked", true).apply()
-        requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_NOTIFICATION_PERMISSION)
     }
 
     private fun deviceStatusJson(): String {
@@ -207,11 +189,7 @@ class MainActivity : Activity() {
     private fun maybeOfferHomeLauncher() {
         if (Policy.isOwner(this) || isDefaultHomeLauncher() ||
             launcherPreferences.getBoolean("home_launcher_prompt_shown", false)
-        ) {
-            notificationPermissionPending = true
-            window.decorView.post { requestNotificationPermissionIfNeeded() }
-            return
-        }
+        ) return
         launcherPreferences.edit().putBoolean("home_launcher_prompt_shown", true).apply()
         val dialog = AlertDialog.Builder(this)
             .setTitle(homeSetupText("Utiliser YZ comme écran d’accueil ?", "Use YZ as your home screen?", "להשתמש ב‑YZ כמסך הבית?", "YZ אַלס דײַן היים־עקראַן נוצן?"))
@@ -219,10 +197,6 @@ class MainActivity : Activity() {
             .setPositiveButton(homeSetupText("Choisir YZ", "Choose YZ", "לבחור ב‑YZ", "YZ אויסקלײַבן")) { _, _ -> requestHomeLauncherRole() }
             .setNegativeButton(homeSetupText("Plus tard", "Later", "מאוחר יותר", "שפּעטער"), null)
             .create()
-        notificationPermissionPending = true
-        dialog.setOnDismissListener {
-            window.decorView.postDelayed({ if (hasWindowFocus()) requestNotificationPermissionIfNeeded() }, 500)
-        }
         dialog.show()
     }
 
@@ -481,14 +455,6 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun openNotificationSettings() {
-        try {
-            startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName))
-        } catch (_: ActivityNotFoundException) {
-            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
-        }
-    }
-
     private fun setAppLanguage(language: String) {
         if (language in setOf("en", "fr", "he", "yi")) {
             launcherPreferences.edit().putString("app_language", language).apply()
@@ -590,22 +556,6 @@ class MainActivity : Activity() {
             (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
         @JavascriptInterface
-        fun shouldOfferDedicatedSetup(): Boolean =
-            !Policy.isOwner(this@MainActivity) &&
-                !launcherPreferences.getBoolean("dedicated_setup_handled", false)
-
-        @JavascriptInterface
-        fun dismissDedicatedSetup() {
-            launcherPreferences.edit().putBoolean("dedicated_setup_handled", true).apply()
-        }
-
-        @JavascriptInterface
-        fun openDedicatedSetupGuide() = runOnUiThread {
-            launcherPreferences.edit().putBoolean("dedicated_setup_handled", true).apply()
-            startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://qinfrance.github.io/YZ-MDM/")))
-        }
-
-        @JavascriptInterface
         fun isWazeVisible(): Boolean = this@MainActivity.isWazeVisible()
 
         @JavascriptInterface
@@ -619,9 +569,6 @@ class MainActivity : Activity() {
 
         @JavascriptInterface
         fun checkForUpdates() = runOnUiThread { this@MainActivity.checkForUpdates() }
-
-        @JavascriptInterface
-        fun openNotificationSettings() = runOnUiThread { this@MainActivity.openNotificationSettings() }
 
         @JavascriptInterface
         fun setAppLanguage(language: String) = this@MainActivity.setAppLanguage(language)
