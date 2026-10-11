@@ -78,6 +78,7 @@ const STRINGS = {
     permission: 'Autorisez le débogage USB sur le téléphone, puis réessayez.',
     steps: 'Activez les options développeur et le débogage USB, branchez un câble de données et acceptez l’empreinte RSA.',
     statusCurrent: 'Installée · conservée',
+    statusZemerCheckFailed: 'Version Zemer impossible à vérifier · réessayez',
     updateAvailable: 'Mise à jour disponible',
     statusMissing: 'Absente · à installer',
     statusUnselected: 'Non sélectionnée',
@@ -153,6 +154,7 @@ const STRINGS = {
     permission: 'Approve USB debugging on the phone, then try again.',
     steps: 'Enable Developer options and USB debugging, use a data-capable cable, and approve the RSA fingerprint.',
     statusCurrent: 'Installed · kept',
+    statusZemerCheckFailed: 'Could not check the Zemer version · retry',
     updateAvailable: 'Update available',
     statusMissing: 'Missing · to install',
     statusUnselected: 'Not selected',
@@ -228,6 +230,7 @@ const STRINGS = {
     permission: 'אשרו ניפוי באגים ב‑USB בטלפון ונסו שוב.',
     steps: 'הפעילו אפשרויות מפתחים וניפוי באגים ב‑USB, השתמשו בכבל נתונים ואשרו את טביעת RSA.',
     statusCurrent: 'מותקנת · נשארת',
+    statusZemerCheckFailed: 'לא ניתן לבדוק את גרסת Zemer · נסו שוב',
     updateAvailable: 'עדכון זמין',
     statusMissing: 'חסרה · להתקנה',
     statusUnselected: 'לא נבחרה',
@@ -303,6 +306,7 @@ const STRINGS = {
     permission: 'דערלויבט USB-דעבאַגינג אויפֿן טעלעפֿאָן און פּרוּווט ווידער.',
     steps: 'אַקטיווירט Developer options און USB-דעבאַגינג, ניצט אַ דאַטן־קאַבל און באַשטעטיקט די RSA פֿינגער־אָפּדרוק.',
     statusCurrent: 'אינסטאַלירט · בלײַבט',
+    statusZemerCheckFailed: 'מ׳קען נישט קאָנטראָלירן די Zemer ווערסיע · פּרוּווט ווידער',
     updateAvailable: 'אַ דערהייַנטיקונג איז בנימצא',
     statusMissing: 'פֿעלט · אינסטאַלירן',
     statusUnselected: 'נישט אויסגעקליבן',
@@ -543,6 +547,9 @@ function renderStatuses() {
     } else if (id === 'launcher' && needsLauncherUpdate()) {
       status.textContent = `${msg('updateAvailable')} · v${appState.launcher.version || appState.launcher.versionCode} → v${buildInfo.versionName}`;
       status.className = 'result warn';
+    } else if (id === 'zemer' && appState.zemer?.installed && appState.zemer.releaseCheckFailed) {
+      status.textContent = msg('statusZemerCheckFailed');
+      status.className = 'result warn';
     } else if (id === 'zemer' && appState.zemer?.installed && appState.zemer.latestVersionCode > appState.zemer.versionCode) {
       status.textContent = `${msg('updateAvailable')} · v${appState.zemer.versionCode} → v${appState.zemer.latestVersionCode}`;
       status.className = 'result warn';
@@ -608,8 +615,11 @@ async function checkApps() {
     latestZemerRelease = await fetchLatestZemerRelease(true);
     latestZemerReleaseCheckedAt = Date.now();
     appState.zemer.latestVersionCode = latestZemerRelease.versionCode;
+    appState.zemer.releaseCheckFailed = false;
   } catch {
     latestZemerRelease = null;
+    appState.zemer.latestVersionCode = null;
+    appState.zemer.releaseCheckFailed = true;
     latestZemerReleaseCheckedAt = Date.now();
   }
   window.webAdbHasCheck = true;
@@ -701,12 +711,14 @@ async function installSelected() {
     try {
       zemerRelease = await fetchLatestZemerRelease(true);
       appState.zemer.latestVersionCode = zemerRelease.versionCode;
+      appState.zemer.releaseCheckFailed = false;
     } catch {
       zemerRelease = null;
+      appState.zemer.releaseCheckFailed = true;
     }
   }
   const zemerNeedsInstall = selection.zemer && (!appState.zemer.installed ||
-    (zemerRelease && zemerRelease.versionCode > appState.zemer.versionCode));
+    !zemerRelease || zemerRelease.versionCode > appState.zemer.versionCode);
   const missingApps = [
     ...(zemerNeedsInstall ? ['zemer'] : []),
     ...['waze', 'pulsar'].filter((id) => selection[id] && !appState[id].installed),
