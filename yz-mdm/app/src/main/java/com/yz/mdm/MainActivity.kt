@@ -6,6 +6,7 @@ import android.app.AlertDialog
 import android.app.PendingIntent
 import android.Manifest
 import android.media.AudioManager
+import android.media.MediaPlayer
 import android.view.KeyEvent
 import android.app.role.RoleManager
 import android.content.res.Configuration
@@ -31,6 +32,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.SystemClock
 import android.provider.Settings
+import android.provider.OpenableColumns
 import android.text.InputType
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
@@ -44,7 +46,11 @@ class MainActivity : Activity() {
     private val updateInProgress = AtomicBoolean(false)
     private val launcherPreferences by lazy { getSharedPreferences("yidream_launcher", MODE_PRIVATE) }
     private var launcherWebView: WebView? = null
+    private val localAudioQueue = mutableListOf<Uri>()
+    private var localAudioIndex = -1
+    private var localPlayer: MediaPlayer? = null
     companion object {
+        private const val REQUEST_LOCAL_AUDIO = 4103
         private const val BUILD_INFO_URL = "https://qinfrance.github.io/YZ-MDM/build-info.json"
         private const val APK_URL = "https://qinfrance.github.io/YZ-MDM/downloads/yz-mdm.apk"
         private const val MAX_APK_BYTES = 300L * 1024L * 1024L
@@ -84,6 +90,31 @@ class MainActivity : Activity() {
         super.onNewIntent(intent)
         setIntent(intent)
         if (intent.action == UpdateNotificationJob.ACTION_INSTALL_UPDATE) checkForUpdates()
+    }
+
+    @Deprecated("Activity result API kept compatible with the existing Android 8+ target")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != REQUEST_LOCAL_AUDIO || resultCode != RESULT_OK || data == null) return
+        val selected = buildList {
+            data.clipData?.let { clip ->
+                for (index in 0 until clip.itemCount) add(clip.getItemAt(index).uri)
+            } ?: data.data?.let(::add)
+        }.distinct()
+        if (selected.isEmpty()) return
+        localAudioQueue.clear()
+        localAudioQueue.addAll(selected)
+        localAudioIndex = 0
+        selected.forEach { uri -> runCatching {
+            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        } }
+        playLocalTrack()
+    }
+
+    override fun onDestroy() {
+        localPlayer?.release()
+        localPlayer = null
+        super.onDestroy()
     }
 
     private fun deviceStatusJson(): String {
@@ -429,7 +460,93 @@ class MainActivity : Activity() {
 
     private fun openZemer() = openPackage(Config.ZEMER_PACKAGES.first(), "Zemer")
     private fun openWaze() = openPackage(Config.WAZE_PACKAGE, "Waze")
-    private fun openPulsar() = openPackage(Config.PULSAR_PACKAGE, "Pulsar")
+
+    /** Pulsar shortcut now opens YZ's built-in local audio player; SAF grants access only to files selected by the user. */
+    private fun openPulsar() {
+        if (localAudioQueue.isNotEmpty()) {
+            if (runCatching { localPlayer?.isPlaying == true }.getOrDefault(false)) pauseLocalTrack() else resumeLocalTrack()
+            return
+        }
+        val picker = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "audio/*"
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        }
+        runCatching { startActivityForResult(picker, REQUEST_LOCAL_AUDIO) }
+            .onFailure { toast("Impossible d’ouvrir la bibliothèque musicale") }
+    }
+
+    private fun localTrackTitle(uri: Uri): String = runCatching {
+        contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) cursor.getString(0)?.substringBeforeLast('.')?.takeIf(String::isNotBlank)
+        }
+    }.getOrNull() ?: "Musique locale"
+
+    private fun playLocalTrack() {
+        val uri = localAudioQueue.getOrNull(localAudioIndex) ?: return
+        localPlayer?.release()
+        localPlayer = null
+        try {
+            localPlayer = MediaPlayer().apply {
+                setAudioAttributes(android.media.AudioAttributes.Builder()
+                    .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build())
+                setDataSource(this@MainActivity, uri)
+                setOnPreparedListener { player -> player.start(); publishLocalPlayerState() }
+                setOnCompletionListener { skipLocalTrack(1) }
+                setOnErrorListener { _, _, _ -> toast("Ce fichier audio ne peut pas être lu"); publishLocalPlayerState(); true }
+                prepareAsync()
+            }
+            publishLocalPlayerState()
+        } catch (_: Exception) {
+            localPlayer?.release()
+            localPlayer = null
+            toast("Ce fichier audio ne peut pas être lu")
+            publishLocalPlayerState()
+        }
+    }
+
+    private fun resumeLocalTrack() {
+        if (localPlayer == null) playLocalTrack()
+        else runCatching { localPlayer?.start() }
+        publishLocalPlayerState()
+    }
+
+    private fun pauseLocalTrack() {
+        runCatching { if (localPlayer?.isPlaying == true) localPlayer?.pause() }
+        publishLocalPlayerState()
+    }
+
+    private fun skipLocalTrack(step: Int) {
+        if (localAudioQueue.isEmpty()) return
+        localAudioIndex = (localAudioIndex + step + localAudioQueue.size) % localAudioQueue.size
+        playLocalTrack()
+    }
+
+    private fun handleMediaCommand(command: String) {
+        if (localAudioQueue.isEmpty()) {
+            if (command == "play") openPulsar() else sendSystemMediaButton(command)
+            return
+        }
+        when (command) {
+            "play" -> resumeLocalTrack()
+            "pause" -> pauseLocalTrack()
+            "previous" -> skipLocalTrack(-1)
+            "next" -> skipLocalTrack(1)
+        }
+    }
+
+    private fun publishLocalPlayerState() {
+        val web = launcherWebView ?: return
+        val state = JSONObject()
+            .put("title", localAudioQueue.getOrNull(localAudioIndex)?.let(::localTrackTitle) ?: "Lecteur audio")
+            .put("subtitle", if (localAudioQueue.isEmpty()) "Choisir des fichiers audio" else "Musique locale")
+            .put("playing", runCatching { localPlayer?.isPlaying == true }.getOrDefault(false))
+            .toString()
+        web.post { web.evaluateJavascript("window.setLocalPlayerState && window.setLocalPlayerState($state)", null) }
+    }
 
     private fun openBluetoothSettings() {
         try {
@@ -545,7 +662,7 @@ class MainActivity : Activity() {
     inner class WebBridge {
         @JavascriptInterface
         fun sendMediaButton(command: String) = runOnUiThread {
-            this@MainActivity.sendMediaButton(command)
+            this@MainActivity.handleMediaCommand(command)
         }
 
         @JavascriptInterface
@@ -603,7 +720,7 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun sendMediaButton(command: String) {
+    private fun sendSystemMediaButton(command: String) {
         val keyCode = when (command) {
             "play" -> KeyEvent.KEYCODE_MEDIA_PLAY
             "pause" -> KeyEvent.KEYCODE_MEDIA_PAUSE
