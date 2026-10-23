@@ -480,7 +480,11 @@ class MainActivity : Activity() {
 
     private fun localTrackTitle(uri: Uri): String = runCatching {
         contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) cursor.getString(0)?.substringBeforeLast('.')?.takeIf(String::isNotBlank)
+            if (cursor.moveToFirst()) {
+                cursor.getString(0)?.substringBeforeLast('.')?.takeIf(String::isNotBlank)
+            } else {
+                null
+            }
         }
     }.getOrNull() ?: "Musique locale"
 
