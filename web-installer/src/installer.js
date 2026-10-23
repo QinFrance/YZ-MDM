@@ -7,13 +7,12 @@ const APP = {
   launcher: { package: 'com.yz.mdm' },
   zemer: { package: 'com.jtech.zemer' },
   waze: { package: 'com.waze' },
-  pulsar: { package: 'com.rhmsoft.pulsar' },
 };
 const OWNER_COMPONENT = 'com.yz.mdm/.AdminReceiver';
 const STRINGS = {
   fr: {
     filesTitle:'Installation automatique',
-    filesHint:'Les applications déjà installées sont conservées. YiDream s’installe ou se met à jour automatiquement. Zemer récupère la dernière version officielle sur GitHub et se met à jour si nécessaire ; Waze et Pulsar passent par Google Play.',
+    filesHint:'Les applications déjà installées sont conservées. YiDream s’installe ou se met à jour automatiquement. Zemer récupère la dernière version officielle sur GitHub et se met à jour si nécessaire ; Waze passe par Google Play ; le lecteur local est intégré à YZ.',
     chooseApk:'Choisir un APK',
     noFileSelected:'Aucun fichier choisi',
     launcherName:'YiDream Launcher',
@@ -28,9 +27,10 @@ const STRINGS = {
     storePulsar:'Télécharger Pulsar sur Google Play',
     ownerSummary:'Option avancée : configurer l’appareil dédié',
     ownerWarning:'À utiliser uniquement sur un appareil neuf ou réinitialisé, avant d’ajouter un compte. Android bloque généralement cette configuration après la mise en service. Le mode dédié verrouille ensuite le téléphone sur les applications autorisées.',
+    ownerConsent:"J’ai lu et compris : le mode dédié limite les applications accessibles et peut restreindre l’usage du téléphone.",
     ownerButton:'Activer le mode dédié',
     filesTitle: "Installation automatique",
-    filesHint: "YiDream s’installe ou se met à jour automatiquement. Zemer télécharge la dernière version officielle de GitHub et se met à jour si une version plus récente existe ; Waze et Pulsar passent par Google Play.",
+    filesHint: "YiDream s’installe ou se met à jour automatiquement. Zemer télécharge la dernière version officielle de GitHub et se met à jour si une version plus récente existe ; Waze passe par Google Play.",
     storeWaze: "Installer Waze sur le téléphone",
     storePulsar: "Installer Pulsar sur le téléphone",
     storeOpened: "Google Play est ouvert sur le téléphone. Terminez l’installation, puis revérifiez les applications.",
@@ -89,7 +89,7 @@ const STRINGS = {
   },
   en: {
     filesTitle:'Automatic installation',
-    filesHint:'Apps already installed are kept. YiDream installs or updates automatically. Zemer gets the latest official GitHub release and updates when needed; Waze and Pulsar go through Google Play.',
+    filesHint:'Apps already installed are kept. YiDream installs or updates automatically. Zemer gets the latest official GitHub release and updates when needed; Waze goes through Google Play; the local player is built into YZ.',
     chooseApk:'Choose APK',
     noFileSelected:'No file selected',
     launcherName:'YiDream Launcher',
@@ -104,9 +104,10 @@ const STRINGS = {
     storePulsar:'Get Pulsar on Google Play',
     ownerSummary:'Advanced option: set up a dedicated device',
     ownerWarning:'Use this only on a new or factory-reset phone, before adding an account. Android generally blocks this setup after the phone has been configured. Dedicated mode then locks the phone to the allowed apps.',
+    ownerConsent:"I have read and understand: dedicated mode limits accessible apps and can restrict how this phone is used.",
     ownerButton:'Enable dedicated mode',
     filesTitle: "Automatic installation",
-    filesHint: "YiDream installs or updates automatically. Zemer downloads the latest official GitHub release and updates when a newer version is available; Waze and Pulsar go through Google Play.",
+    filesHint: "YiDream installs or updates automatically. Zemer downloads the latest official GitHub release and updates when a newer version is available; Waze goes through Google Play.",
     storeWaze: "Install Waze on the phone",
     storePulsar: "Install Pulsar on the phone",
     storeOpened: "Google Play is open on the phone. Finish the installation, then check the apps again.",
@@ -165,7 +166,7 @@ const STRINGS = {
   },
   he: {
     filesTitle:'אפליקציות להוספה',
-    filesHint:'אפליקציות שכבר מותקנות יישארו. YiDream יותקן או יעודכן אוטומטית. Zemer יוריד את הגרסה הרשמית האחרונה מ‑GitHub ויעודכן בעת הצורך; Waze ו‑Pulsar דרך Google Play.',
+    filesHint:'אפליקציות שכבר מותקנות יישארו. YiDream יותקן או יעודכן אוטומטית. Zemer יוריד את הגרסה הרשמית האחרונה מ‑GitHub ויעודכן בעת הצורך; Waze דרך Google Play; נגן המוזיקה המקומי מובנה ב‑YZ.',
     chooseApk:'בחירת APK',
     noFileSelected:'לא נבחר קובץ',
     launcherName:'YiDream Launcher',
@@ -180,9 +181,10 @@ const STRINGS = {
     storePulsar:'הורדת Pulsar מ‑Google Play',
     ownerSummary:'אפשרות מתקדמת: הגדרת מכשיר ייעודי',
     ownerWarning:'השתמשו באפשרות זו רק בטלפון חדש או מאופס להגדרות היצרן, לפני הוספת חשבון. Android בדרך כלל חוסם הגדרה זו לאחר שהטלפון הוגדר. לאחר מכן מצב ייעודי נועל את הטלפון לאפליקציות המורשות.',
+    ownerConsent:"קראתי והבנתי: מצב ייעודי מגביל את האפליקציות הזמינות ואת אופן השימוש בטלפון.",
     ownerButton:'הפעלת מצב ייעודי',
     filesTitle: "התקנה אוטומטית",
-    filesHint: "YiDream יותקן או יעודכן אוטומטית. Zemer יוריד את הגרסה הרשמית האחרונה מ‑GitHub ויתעדכן כשיש גרסה חדשה יותר; Waze ו‑Pulsar דרך Google Play.",
+    filesHint: "YiDream יותקן או יעודכן אוטומטית. Zemer יוריד את הגרסה הרשמית האחרונה מ‑GitHub ויתעדכן כשיש גרסה חדשה יותר; Waze דרך Google Play.",
     storeWaze: "התקנת Waze בטלפון",
     storePulsar: "התקנת Pulsar בטלפון",
     storeOpened: "Google Play פתוח בטלפון. השלימו את ההתקנה ובדקו שוב את האפליקציות.",
@@ -241,7 +243,7 @@ const STRINGS = {
   },
   yi: {
     filesTitle:'אַפּס צו צולייגן',
-    filesHint:'שוין אינסטאַלירטע אַפּס בלײַבן. YiDream ווערט אויטאָמאַטיש אינסטאַלירט אָדער דערהײַנטיקט. Zemer נעמט די לעצטע אָפֿיציעלע GitHub ווערסיע און דערהײַנטיקט זי ווען נייטיק; Waze און Pulsar ווערן אינסטאַלירט דורך Google Play.',
+    filesHint:'שוין אינסטאַלירטע אַפּס בלײַבן. YiDream ווערט אויטאָמאַטיש אינסטאַלירט אָדער דערהײַנטיקט. Zemer נעמט די לעצטע אָפֿיציעלע GitHub ווערסיע און דערהײַנטיקט זי ווען נייטיק; Waze ווערט אינסטאַלירט דורך Google Play; דער לאָקאַלער שפּילער איז שוין אין YZ.',
     chooseApk:'קלײַבן APK',
     noFileSelected:'קיין טעקע נישט אויסגעקליבן',
     launcherName:'YiDream Launcher',
@@ -256,9 +258,10 @@ const STRINGS = {
     storePulsar:'ברענגט Pulsar פֿון Google Play',
     ownerSummary:'פֿאָרגעשריטענע אָפּציע: אײַנשטעלן אַ דעדיקירטן מכשיר',
     ownerWarning:'ניצט דאָס נאָר אויף אַ נײַעם אָדער צוריקגעשטעלטן טעלעפֿאָן, איידער איר לייגט צו אַ חשבון. Android בלאָקירט בדרך־כּלל די אײַנשטעלונג נאָכן צוגרייטן דעם טעלעפֿאָן. דערנאָך פֿאַרשליסט דער דעדיקירטער מאָדוס דעם טעלעפֿאָן צו די ערלויבטע אַפּס.',
+    ownerConsent:"איך האָב געלייענט און פֿאַרשטאַנען: דער דעדיקירטער מאָדוס באַגרענעצט די צוטריטלעכע אַפּס און די באַניץ פֿונעם טעלעפֿאָן.",
     ownerButton:'אַקטיווירן דעדיקירטן מאָדוס',
     filesTitle: "אָטאָמאַטישע אינסטאַלאַציע",
-    filesHint: "YiDream ווערט אויטאָמאַטיש אינסטאַלירט אָדער דערהײַנטיקט. Zemer וועט אַראָפּלאָדן די לעצטע אָפֿיציעלע GitHub ווערסיע און זיך דערהײַנטיקן ווען עס איז נײַער; Waze און Pulsar גייען דורך Google Play.",
+    filesHint: "YiDream ווערט אויטאָמאַטיש אינסטאַלירט אָדער דערהײַנטיקט. Zemer וועט אַראָפּלאָדן די לעצטע אָפֿיציעלע GitHub ווערסיע און זיך דערהײַנטיקן ווען עס איז נײַער; Waze גייט דורך Google Play.",
     storeWaze: "אינסטאַלירן Waze אויפֿן טעלעפֿאָן",
     storePulsar: "אינסטאַלירן Pulsar אויפֿן טעלעפֿאָן",
     storeOpened: "Google Play איז אָפֿן אויפֿן טעלעפֿאָן. ענדיקט די אינסטאַלאַציע און קאָנטראָלירט די אַפּס ווידער.",
@@ -473,7 +476,7 @@ function selectedApps() {
   return {
     zemer: document.querySelector('[data-app="zemer"] .select').checked,
     waze: document.querySelector('[data-app="waze"] .select').checked,
-    pulsar: document.querySelector('[data-app="pulsar"] .select').checked,
+    pulsar: true,
   };
 }
 
@@ -512,7 +515,7 @@ function setDeviceUi(connected, info = null) {
 function updateButtons() {
   el('checkBtn').disabled = !adb.adb;
   el('installBtn').disabled = !adb.adb || !window.webAdbHasCheck;
-  el('ownerBtn').disabled = !adb.adb || !appState?.launcher?.installed || deviceOwnerActive;
+  el('ownerBtn').disabled = !adb.adb || !appState?.launcher?.installed || deviceOwnerActive || !el('ownerConsent').checked;
   el('ownerBtn').hidden = deviceOwnerActive;
   el('ownerRemoveWarning').hidden = !deviceOwnerActive;
   el('removeOwnerBtn').disabled = !adb.adb || !deviceOwnerActive;
@@ -538,7 +541,7 @@ function needsLauncherUpdate() {
 
 function renderStatuses() {
   if (!appState) return;
-  for (const id of ['launcher', 'zemer', 'waze', 'pulsar']) {
+  for (const id of ['launcher', 'zemer', 'waze']) {
     const status = el(`status-${id}`);
     const isSelected = id === 'launcher' || selectedApps()[id];
     if (!isSelected) {
@@ -557,7 +560,7 @@ function renderStatuses() {
       const version = appState[id]?.version ? ` · v${appState[id].version}` : '';
       status.textContent = `${msg('statusCurrent')}${version}`;
       status.className = 'result ok';
-    } else if (id === 'waze' || id === 'pulsar') {
+    } else if (id === 'waze') {
       status.textContent = msg('statusNeedsPlay');
       status.className = 'result warn';
     } else {
@@ -571,9 +574,9 @@ function renderStatuses() {
 function refreshRuntimeCopy() {
   el('storeZemer').textContent = msg('storeZemer');
   el('storeWaze').textContent = msg('storeWaze');
-  el('storePulsar').textContent = msg('storePulsar');
   el('ownerSummary').textContent = msg('ownerSummary');
   el('ownerWarning').textContent = msg('ownerWarning');
+  el('ownerConsentCopy').textContent = msg('ownerConsent');
   el('ownerRemoveWarning').textContent = msg('ownerRemoveWarning');
   el('ownerBtn').textContent = msg('ownerButton');
   el('removeOwnerBtn').textContent = msg('ownerRemoveButton');
@@ -584,17 +587,15 @@ function showFileOptions() {
   const missing = {
     zemer: selected.zemer && !appState.zemer?.installed,
     waze: selected.waze && !appState.waze?.installed,
-    pulsar: selected.pulsar && !appState.pulsar?.installed,
   };
   const showZemerStore = missing.zemer && zemerFetchFailed;
   const launcherUnavailable = (!appState.launcher?.installed || needsLauncherUpdate()) && !buildInfo.releaseReady;
   el('runtimeFiles').hidden = !Object.values(missing).some(Boolean) && !launcherUnavailable;
   el('fileTitle').textContent = msg('filesTitle');
   el('fileHint').textContent = launcherUnavailable ? msg('launcherSigning') : msg('filesHint');
-  el('storeLinks').hidden = !(showZemerStore || missing.waze || missing.pulsar);
+  el('storeLinks').hidden = !(showZemerStore || missing.waze);
   el('storeZemer').hidden = !showZemerStore;
   el('storeWaze').hidden = !missing.waze;
-  el('storePulsar').hidden = !missing.pulsar;
 }
 async function checkApps() {
   if (!adb.adb) throw new Error('NOT_CONNECTED');
@@ -629,7 +630,7 @@ async function checkApps() {
   el('runtimeProgress').hidden = true;
   el('actionNote').textContent = msg('checkDone');
   el('installBtn').disabled = false;
-  el('ownerBtn').disabled = !appState.launcher.installed;
+  el('ownerBtn').disabled = !appState.launcher.installed || !el('ownerConsent').checked;
   setStatus(msg('checkDone'), 'success');
   setStep(2);
 }
@@ -721,7 +722,7 @@ async function installSelected() {
     !zemerRelease || zemerRelease.versionCode > appState.zemer.versionCode);
   const missingApps = [
     ...(zemerNeedsInstall ? ['zemer'] : []),
-    ...['waze', 'pulsar'].filter((id) => selection[id] && !appState[id].installed),
+    ...['waze'].filter((id) => selection[id] && !appState[id].installed),
   ];
   const firstLauncherInstall = !appState.launcher.installed;
   const launcherNeedsInstall = firstLauncherInstall || needsLauncherUpdate();
@@ -730,7 +731,7 @@ async function installSelected() {
     throw new Error('LAUNCHER_NOT_READY');
   }
   const autoApps = missingApps.filter((id) => id === 'zemer');
-  const storeApps = missingApps.filter((id) => id === 'waze' || id === 'pulsar');
+  const storeApps = missingApps.filter((id) => id === 'waze');
   const total = autoApps.length + (launcherNeedsInstall ? 1 : 0) + (storeApps.length ? 1 : 0);
   if (!total) {
     setStatus(msg('checkDone'), 'success');
@@ -870,6 +871,7 @@ el('connectBtn').addEventListener('click', () => handle(async () => {
 }));
 el('checkBtn').addEventListener('click', () => handle(checkApps));
 el('installBtn').addEventListener('click', () => handle(installSelected));
+el('ownerConsent').addEventListener('change', () => { el('ownerBtn').disabled = !adb.adb || !appState?.launcher?.installed || deviceOwnerActive || !el('ownerConsent').checked; });
 el('ownerBtn').addEventListener('click', () => handle(activateOwner));
 el('removeOwnerBtn').addEventListener('click', () => handle(removeOwner));
 el('storeZemer').addEventListener('click', () => handle(async () => {
@@ -878,10 +880,6 @@ el('storeZemer').addEventListener('click', () => handle(async () => {
 }));
 el('storeWaze').addEventListener('click', () => handle(async () => {
   await openStoreApp('waze');
-  setStatus(msg('storeOpened'), 'warn');
-}));
-el('storePulsar').addEventListener('click', () => handle(async () => {
-  await openStoreApp('pulsar');
   setStatus(msg('storeOpened'), 'warn');
 }));
 

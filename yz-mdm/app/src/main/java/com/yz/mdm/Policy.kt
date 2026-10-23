@@ -50,7 +50,7 @@ object Policy {
         (
             listOf(c.packageName, settingsPackage(c)) +
                 Config.ZEMER_PACKAGES +
-                listOf(Config.WAZE_PACKAGE, Config.PULSAR_PACKAGE).filter { isInstalled(c, it) } +
+                listOf(Config.WAZE_PACKAGE).filter { isInstalled(c, it) } +
                 Config.EXTRA_ALLOWED_PACKAGES
         ).distinct()
 
