@@ -100,7 +100,7 @@ class MainActivity : Activity() {
         val selected = buildList {
             data.clipData?.let { clip ->
                 for (index in 0 until clip.itemCount) add(clip.getItemAt(index).uri)
-            } ?: data.data?.let(::add)
+            } ?: data.data?.let { add(it) }
         }.distinct()
         if (selected.isEmpty()) return
         localAudioQueue.clear()
