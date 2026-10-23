@@ -160,7 +160,9 @@ class MainActivity : Activity() {
                         "localStorage.setItem('yidream-car-mode-auto','false');window.location.reload()",
                         null
                     )
+                    return
                 }
+                view.post { publishLocalPlayerState() }
             }
         }
         addJavascriptInterface(WebBridge(), "YZMDM")
@@ -463,8 +465,8 @@ class MainActivity : Activity() {
     private fun openWaze() = openPackage(Config.WAZE_PACKAGE, "Waze")
 
     /** Pulsar shortcut now opens YZ's built-in local audio player; SAF grants access only to files selected by the user. */
-    private fun openPulsar() {
-        if (localAudioQueue.isNotEmpty()) {
+    private fun openPulsar(forcePicker: Boolean = false) {
+        if (localAudioQueue.isNotEmpty() && !forcePicker) {
             if (runCatching { localPlayer?.isPlaying == true }.getOrDefault(false)) pauseLocalTrack() else resumeLocalTrack()
             return
         }
@@ -531,10 +533,11 @@ class MainActivity : Activity() {
     }
 
     private fun handleMediaCommand(command: String) {
-        if (localAudioQueue.isEmpty()) {
-            if (command == "play") openPulsar() else sendSystemMediaButton(command)
+        if (command == "choose" || (command == "play" && localAudioQueue.isEmpty())) {
+            openPulsar(forcePicker = true)
             return
         }
+        if (localAudioQueue.isEmpty()) return
         when (command) {
             "play" -> resumeLocalTrack()
             "pause" -> pauseLocalTrack()
@@ -546,7 +549,7 @@ class MainActivity : Activity() {
     private fun publishLocalPlayerState() {
         val web = launcherWebView ?: return
         val state = JSONObject()
-            .put("title", localAudioQueue.getOrNull(localAudioIndex)?.let(::localTrackTitle) ?: "Lecteur audio")
+            .put("title", localAudioQueue.getOrNull(localAudioIndex)?.let(::localTrackTitle) ?: "Musique locale")
             .put("subtitle", if (localAudioQueue.isEmpty()) "Choisir des fichiers audio" else "Musique locale")
             .put("playing", runCatching { localPlayer?.isPlaying == true }.getOrDefault(false))
             .toString()
