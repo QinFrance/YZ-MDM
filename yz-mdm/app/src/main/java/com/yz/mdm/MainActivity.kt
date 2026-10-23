@@ -716,9 +716,40 @@ class MainActivity : Activity() {
         fun adminTap() = runOnUiThread { onTitleTap() }
 
         @JavascriptInterface
-        fun submitExitCode(code: String) = runOnUiThread {
-            toast("La validation du code quotidien n’est pas encore connectée")
+        fun requestOwnerExitCode() = runOnUiThread { this@MainActivity.requestOwnerExitCode() }
+
+    private fun requestOwnerExitCode() {
+        if (!Policy.isOwner(this)) {
+            toast("Le mode appareil dédié n’est pas actif")
+            return
         }
+        if (!Pin.isSet(this)) {
+            toast("Aucun code administrateur n’est configuré. Configurez d’abord le code dans l’accès administrateur.")
+            return
+        }
+        val input = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD
+            hint = "Code administrateur"
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Désactiver le mode dédié")
+            .setMessage("Saisissez le code administrateur pour retirer le Device Owner et ses restrictions.")
+            .setView(input)
+            .setPositiveButton("Désactiver") { _, _ ->
+                if (!Pin.check(this, input.text.toString())) {
+                    toast("Code incorrect")
+                    return@setPositiveButton
+                }
+                Kiosk.suspended = true
+                runCatching { stopLockTask() }
+                Policy.release(this)
+                toast(if (Policy.isOwner(this)) "Impossible de retirer le Device Owner" else "Device Owner retiré · restrictions désactivées")
+            }
+            .setNegativeButton("Annuler", null)
+            .show()
+    }
+
+    inner class WebBridge {
     }
 
     private fun sendSystemMediaButton(command: String) {
