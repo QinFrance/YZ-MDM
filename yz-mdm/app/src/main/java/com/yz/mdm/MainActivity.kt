@@ -75,6 +75,7 @@ class MainActivity : Activity() {
         super.onResume()
         applyImmersiveMode()
         launcherWebView?.evaluateJavascript("window.dispatchEvent(new Event('yz-system-appearance-changed'))", null)
+        launcherWebView?.evaluateJavascript("window.dispatchEvent(new Event('yz-home-returned'))", null)
         if (Policy.isOwner(this)) {
             Policy.suspendNonEssentialApps(this)
             if (!Kiosk.suspended) {
