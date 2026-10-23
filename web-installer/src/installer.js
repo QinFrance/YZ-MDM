@@ -27,6 +27,7 @@ const STRINGS = {
     storePulsar:'Télécharger Pulsar sur Google Play',
     ownerSummary:'Option avancée : configurer l’appareil dédié',
     ownerWarning:'À utiliser uniquement sur un appareil neuf ou réinitialisé, avant d’ajouter un compte. Android bloque généralement cette configuration après la mise en service. Le mode dédié verrouille ensuite le téléphone sur les applications autorisées.',
+    ownerConsent:"J’ai lu et compris : le mode dédié limite les applications accessibles et peut restreindre l’usage du téléphone.",
     ownerButton:'Activer le mode dédié',
     filesTitle: "Installation automatique",
     filesHint: "YiDream s’installe ou se met à jour automatiquement. Zemer télécharge la dernière version officielle de GitHub et se met à jour si une version plus récente existe ; Waze passe par Google Play.",
@@ -103,6 +104,7 @@ const STRINGS = {
     storePulsar:'Get Pulsar on Google Play',
     ownerSummary:'Advanced option: set up a dedicated device',
     ownerWarning:'Use this only on a new or factory-reset phone, before adding an account. Android generally blocks this setup after the phone has been configured. Dedicated mode then locks the phone to the allowed apps.',
+    ownerConsent:"I have read and understand: dedicated mode limits accessible apps and can restrict how this phone is used.",
     ownerButton:'Enable dedicated mode',
     filesTitle: "Automatic installation",
     filesHint: "YiDream installs or updates automatically. Zemer downloads the latest official GitHub release and updates when a newer version is available; Waze goes through Google Play.",
@@ -179,6 +181,7 @@ const STRINGS = {
     storePulsar:'הורדת Pulsar מ‑Google Play',
     ownerSummary:'אפשרות מתקדמת: הגדרת מכשיר ייעודי',
     ownerWarning:'השתמשו באפשרות זו רק בטלפון חדש או מאופס להגדרות היצרן, לפני הוספת חשבון. Android בדרך כלל חוסם הגדרה זו לאחר שהטלפון הוגדר. לאחר מכן מצב ייעודי נועל את הטלפון לאפליקציות המורשות.',
+    ownerConsent:"קראתי והבנתי: מצב ייעודי מגביל את האפליקציות הזמינות ואת אופן השימוש בטלפון.",
     ownerButton:'הפעלת מצב ייעודי',
     filesTitle: "התקנה אוטומטית",
     filesHint: "YiDream יותקן או יעודכן אוטומטית. Zemer יוריד את הגרסה הרשמית האחרונה מ‑GitHub ויתעדכן כשיש גרסה חדשה יותר; Waze דרך Google Play.",
@@ -255,6 +258,7 @@ const STRINGS = {
     storePulsar:'ברענגט Pulsar פֿון Google Play',
     ownerSummary:'פֿאָרגעשריטענע אָפּציע: אײַנשטעלן אַ דעדיקירטן מכשיר',
     ownerWarning:'ניצט דאָס נאָר אויף אַ נײַעם אָדער צוריקגעשטעלטן טעלעפֿאָן, איידער איר לייגט צו אַ חשבון. Android בלאָקירט בדרך־כּלל די אײַנשטעלונג נאָכן צוגרייטן דעם טעלעפֿאָן. דערנאָך פֿאַרשליסט דער דעדיקירטער מאָדוס דעם טעלעפֿאָן צו די ערלויבטע אַפּס.',
+    ownerConsent:"איך האָב געלייענט און פֿאַרשטאַנען: דער דעדיקירטער מאָדוס באַגרענעצט די צוטריטלעכע אַפּס און די באַניץ פֿונעם טעלעפֿאָן.",
     ownerButton:'אַקטיווירן דעדיקירטן מאָדוס',
     filesTitle: "אָטאָמאַטישע אינסטאַלאַציע",
     filesHint: "YiDream ווערט אויטאָמאַטיש אינסטאַלירט אָדער דערהײַנטיקט. Zemer וועט אַראָפּלאָדן די לעצטע אָפֿיציעלע GitHub ווערסיע און זיך דערהײַנטיקן ווען עס איז נײַער; Waze גייט דורך Google Play.",
@@ -511,7 +515,7 @@ function setDeviceUi(connected, info = null) {
 function updateButtons() {
   el('checkBtn').disabled = !adb.adb;
   el('installBtn').disabled = !adb.adb || !window.webAdbHasCheck;
-  el('ownerBtn').disabled = !adb.adb || !appState?.launcher?.installed || deviceOwnerActive;
+  el('ownerBtn').disabled = !adb.adb || !appState?.launcher?.installed || deviceOwnerActive || !el('ownerConsent').checked;
   el('ownerBtn').hidden = deviceOwnerActive;
   el('ownerRemoveWarning').hidden = !deviceOwnerActive;
   el('removeOwnerBtn').disabled = !adb.adb || !deviceOwnerActive;
@@ -572,6 +576,7 @@ function refreshRuntimeCopy() {
   el('storeWaze').textContent = msg('storeWaze');
   el('ownerSummary').textContent = msg('ownerSummary');
   el('ownerWarning').textContent = msg('ownerWarning');
+  el('ownerConsentCopy').textContent = msg('ownerConsent');
   el('ownerRemoveWarning').textContent = msg('ownerRemoveWarning');
   el('ownerBtn').textContent = msg('ownerButton');
   el('removeOwnerBtn').textContent = msg('ownerRemoveButton');
@@ -625,7 +630,7 @@ async function checkApps() {
   el('runtimeProgress').hidden = true;
   el('actionNote').textContent = msg('checkDone');
   el('installBtn').disabled = false;
-  el('ownerBtn').disabled = !appState.launcher.installed;
+  el('ownerBtn').disabled = !appState.launcher.installed || !el('ownerConsent').checked;
   setStatus(msg('checkDone'), 'success');
   setStep(2);
 }
@@ -866,6 +871,7 @@ el('connectBtn').addEventListener('click', () => handle(async () => {
 }));
 el('checkBtn').addEventListener('click', () => handle(checkApps));
 el('installBtn').addEventListener('click', () => handle(installSelected));
+el('ownerConsent').addEventListener('change', () => { el('ownerBtn').disabled = !adb.adb || !appState?.launcher?.installed || deviceOwnerActive || !el('ownerConsent').checked; });
 el('ownerBtn').addEventListener('click', () => handle(activateOwner));
 el('removeOwnerBtn').addEventListener('click', () => handle(removeOwner));
 el('storeZemer').addEventListener('click', () => handle(async () => {
