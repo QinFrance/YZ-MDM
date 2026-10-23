@@ -465,8 +465,8 @@ class MainActivity : Activity() {
     private fun openWaze() = openPackage(Config.WAZE_PACKAGE, "Waze")
 
     /** Pulsar shortcut now opens YZ's built-in local audio player; SAF grants access only to files selected by the user. */
-    private fun openPulsar() {
-        if (localAudioQueue.isNotEmpty()) {
+    private fun openPulsar(forcePicker: Boolean = false) {
+        if (localAudioQueue.isNotEmpty() && !forcePicker) {
             if (runCatching { localPlayer?.isPlaying == true }.getOrDefault(false)) pauseLocalTrack() else resumeLocalTrack()
             return
         }
