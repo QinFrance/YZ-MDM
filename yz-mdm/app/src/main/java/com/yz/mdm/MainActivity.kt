@@ -717,6 +717,7 @@ class MainActivity : Activity() {
 
         @JavascriptInterface
         fun requestOwnerExitCode() = runOnUiThread { this@MainActivity.requestOwnerExitCode() }
+    }
 
     private fun requestOwnerExitCode() {
         if (!Policy.isOwner(this)) {
@@ -747,9 +748,6 @@ class MainActivity : Activity() {
             }
             .setNegativeButton("Annuler", null)
             .show()
-    }
-
-    inner class WebBridge {
     }
 
     private fun sendSystemMediaButton(command: String) {
