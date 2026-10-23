@@ -18,7 +18,7 @@
         <path android:fillColor="#00000000" android:strokeColor="#FFFFFFFF" android:strokeWidth="32" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M414,128 L306,300" />
         <path android:fillColor="#00000000" android:strokeColor="#FFFFFFFF" android:strokeWidth="32" android:strokeLineCap="round" android:pathData="M306,300 H414" />
         <!-- YiDream K seal. -->
-        <path android:fillColor="#00000000" android:strokeColor="#FFFFFFFF" android:strokeWidth="10" android:pathData="M455,22 A34,34 0 1,1 454.9,22" />
+        <path android:fillColor="#00000000" android:strokeColor="#FFFFFFFF" android:strokeWidth="10" android:pathData="M489,56 A34,34 0 1,1 421,56 A34,34 0 1,1 489,56" />
         <path android:fillColor="#00000000" android:strokeColor="#FFFFFFFF" android:strokeWidth="9" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M444,39 V73 M445,56 L465,39 M445,56 L465,73" />
         <!-- Lilac beamed notes. -->
         <path android:fillColor="#FFFFFFFF" android:pathData="M354,354 L412,338 V356 L354,373 Z" />
