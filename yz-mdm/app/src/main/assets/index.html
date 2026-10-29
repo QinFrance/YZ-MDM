@@ -89,7 +89,33 @@ body.theme-light .sheet-head{background:#fff}
 /* The enlarged clock replaces the old brand identity in the launcher header. */
 .status-time{display:none}
 @media(max-width:380px){.home-clock{font-size:30px}.home-date{font-size:11px}}
-</style></head>
+</style>
+<style id="yz-compact-layout">
+/* Optional compact music layout. The existing controls and native bridge stay shared. */
+.compact-settings-tile{display:none}
+body.layout-compact .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+body.layout-compact .tile{min-height:124px;border-radius:23px;padding:17px;background:linear-gradient(145deg,var(--surface-2),var(--surface));grid-column:auto;grid-row:auto}
+body.layout-compact .tile-main{grid-column:1/-1;min-height:154px;background:linear-gradient(120deg,#24212b,#19181e);border-color:#403a48}
+body.layout-compact.theme-light .tile-main{background:linear-gradient(120deg,#ede6f5,#f5f2fa)}
+body.layout-compact .tile-icon{width:43px;height:43px;border-radius:15px;color:var(--lilac);background:#302a38}
+body.layout-compact.theme-light .tile-icon{background:#eee8f5;color:#685482}
+body.layout-compact .tile-main .tile-icon{width:49px;height:49px;border-radius:17px}
+body.layout-compact .tile-map{order:1}body.layout-compact .tile-pulsar{order:2}
+body.layout-compact .tile-system{order:3}body.layout-compact .compact-settings-tile{display:flex;order:4}
+body.layout-compact .greeting{display:none}body.layout-compact .top-button{border-radius:50%}
+body.layout-compact .grid .tile[hidden]{display:none!important}
+body.layout-compact.car-mode .scroll{overflow:auto;padding-bottom:90px}
+body.layout-compact.car-mode .grid{flex:none;grid-template-columns:1.15fr .85fr 1fr;grid-template-rows:minmax(145px,1fr) minmax(95px,.62fr)}
+body.layout-compact.car-mode .tile{display:flex;min-height:0;padding:17px;grid-column:auto;grid-row:auto}
+body.layout-compact.car-mode .tile-main{grid-column:1;grid-row:1/3;min-height:0}
+body.layout-compact.car-mode .tile-map{grid-column:2;grid-row:1}
+body.layout-compact.car-mode .tile-pulsar{grid-column:3;grid-row:1}
+body.layout-compact.car-mode .tile-system{grid-column:2;grid-row:2}
+body.layout-compact.car-mode .compact-settings-tile{grid-column:3;grid-row:2}
+body.layout-compact.car-mode .media-dock{display:flex}
+body.layout-compact.car-mode .tile-icon{width:43px;height:43px}
+</style>
+</head>
 <body>
   <main class="device" aria-label="Maquette du launcher YiDream">
     <div class="status"><span class="status-time"><span id="clock">--:--</span><span id="date-line" class="status-date"></span></span><span class="status-icons" aria-label="Réseau et batterie"><span id="wifi-status" class="status-indicator" aria-label="Wi-Fi"><svg viewBox="0 0 24 24"><path d="M5 9a11 11 0 0 1 14 0M8 12a6.5 6.5 0 0 1 8 0m-5 4h.01"/><circle cx="12" cy="18" r=".8"/></svg></span><span id="mobile-status" class="status-indicator" aria-label="Réseau mobile" hidden><svg viewBox="0 0 24 24"><path d="M4 20v-3m5 3v-7m5 7V9m5 11V5"/></svg></span><span id="offline-status" class="status-indicator" aria-label="Aucun réseau" hidden><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></span><span class="battery-info" aria-label="Batterie"><span id="battery-level">--%</span><span id="battery-charge" class="battery-charge" hidden>⚡</span><svg viewBox="0 0 24 24"><rect x="3" y="7" width="17" height="10" rx="2"/><path d="M22 10v4"/><path d="M6 10h10v4H6z" fill="currentColor" stroke="none"/></svg></span></span></div>
@@ -102,6 +128,7 @@ body.theme-light .sheet-head{background:#fff}
         <button class="tile tile-map" data-open="waze"><span class="tile-top"><span class="tile-icon"><svg viewBox="0 0 24 24" role="img" aria-label="Waze"><path d="M13.218 0C9.915 0 6.835 1.49 4.723 4.148c-1.515 1.913-2.31 4.272-2.31 6.706v1.739c0 .894-.62 1.738-1.862 1.813-.298.025-.547.224-.547.522-.05.82.82 2.31 2.012 3.502.82.844 1.788 1.515 2.832 2.036a3 3 0 0 0 2.955 3.528 2.966 2.966 0 0 0 2.931-2.385h2.509c.323 1.689 2.086 2.856 3.974 2.21 1.64-.546 2.36-2.409 1.763-3.924a12.84 12.84 0 0 0 1.838-1.465 10.73 10.73 0 0 0 3.18-7.65c0-2.882-1.118-5.589-3.155-7.625A10.899 10.899 0 0 0 13.218 0zm0 1.217c2.558 0 4.967.994 6.78 2.807a9.525 9.525 0 0 1 2.807 6.78A9.526 9.526 0 0 1 20 17.585a9.647 9.647 0 0 1-6.78 2.807h-2.46a3.008 3.008 0 0 0-2.93-2.41 3.03 3.03 0 0 0-2.534 1.367v.024a8.945 8.945 0 0 1-2.41-1.788c-.844-.844-1.316-1.614-1.515-2.11a2.858 2.858 0 0 0 1.441-.846 2.959 2.959 0 0 0 .795-2.036v-1.789c0-2.11.696-4.197 2.012-5.861 1.863-2.385 4.62-3.726 7.6-3.726zm-2.41 5.986a1.192 1.192 0 0 0-1.191 1.192 1.192 1.192 0 0 0 1.192 1.193A1.192 1.192 0 0 0 12 8.395a1.192 1.192 0 0 0-1.192-1.192zm7.204 0a1.192 1.192 0 0 0-1.192 1.192 1.192 1.192 0 0 0 1.192 1.193 1.192 1.192 0 0 0 1.192-1.193 1.192 1.192 0 0 0-1.192-1.192zm-7.377 4.769a.596.596 0 0 0-.546.845 4.813 4.813 0 0 0 4.346 2.757 4.77 4.77 0 0 0 4.347-2.757.596.596 0 0 0-.547-.845h-.025a.561.561 0 0 0-.521.348 3.59 3.59 0 0 1-3.254 2.061 3.591 3.591 0 0 1-3.254-2.061.64.64 0 0 0-.546-.348z"/></svg></span></span><span class="tile-bottom"><span class="tile-title">Waze</span></span></button>
         <button class="tile tile-system" data-open="bluetooth"><span class="tile-top"><span class="tile-icon"><svg viewBox="0 0 24 24"><path d="m7 7 10 10-5 5V2l5 5L7 17"/></svg></span></span><span class="tile-bottom"><span class="tile-title">Bluetooth</span></span></button>
 
+        <button class="tile compact-settings-tile" data-open="launcher"><span class="tile-top"><span class="tile-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></svg></span></span><span class="tile-bottom"><span class="tile-title">Réglages du launcher</span></span></button>
       </section>
       <div class="bottom-note"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>Appareil dédié · aucun compte requis</div>
     </section>
@@ -122,6 +149,7 @@ body.theme-light .sheet-head{background:#fff}
       Object.assign(languageTables.he,{"Commandes de lecture":"פקדי השמעה","Précédent":"הקודם","Suivant":"הבא","Installer la dernière mise à jour":"התקן את העדכון האחרון"});
       Object.assign(languageTables.yi,{"Commandes de lecture":"שפּיל־קאָנטראָלן","Précédent":"פֿריִערדיקע","Suivant":"נעקסטע","Installer la dernière mise à jour":"אינסטאַלירן די לעצטע דערהייַנטיקונג"});
       const supportedLanguages=['en','fr','he','yi'];
+      Object.entries({"en": {"Disposition de l’accueil": "Home layout", "Actuelle": "Current", "Compacte": "Compact"}, "he": {"Disposition de l’accueil": "פריסת מסך הבית", "Actuelle": "נוכחית", "Compacte": "קומפקטית"}, "yi": {"Disposition de l’accueil": "אויסלייג פֿונעם היים־עקראַן", "Actuelle": "איצטיקער", "Compacte": "קאָמפּאַקט"}}).forEach(([code,table])=>Object.assign(languageTables[code],table));
       let currentLanguage='fr';try{currentLanguage=localStorage.getItem('yidream-language')||'fr'}catch(_){}
       if(!supportedLanguages.includes(currentLanguage))currentLanguage='fr';
       function localizedText(value,target,source){
@@ -175,6 +203,9 @@ body.theme-light .sheet-head{background:#fff}
       const orientationQuery=window.matchMedia('(orientation: landscape)');
       function readPreference(key,fallback){try{const value=localStorage.getItem(key);return value===null?fallback:value==='true'}catch(_){return fallback}}
       function savePreference(key,value){try{localStorage.setItem(key,String(value))}catch(_){}}
+      let layoutMode=(()=>{try{return localStorage.getItem('yz-layout')==='compact'?'compact':'standard'}catch(_){return 'standard'}})();
+      function applyLayout(mode=layoutMode,persist=false){layoutMode=mode==='compact'?'compact':'standard';document.body.classList.toggle('layout-compact',layoutMode==='compact');if(persist)try{localStorage.setItem('yz-layout',layoutMode)}catch(_){}}
+      applyLayout();
       const systemDarkQuery=window.matchMedia('(prefers-color-scheme: dark)');
       let appearanceMode=(()=>{try{return localStorage.getItem('yz-appearance')||'system'}catch(_){return 'system'}})();
       function systemIsDark(){try{if(window.YZMDM&&typeof YZMDM.isSystemDarkMode==='function')return YZMDM.isSystemDarkMode()}catch(_){}return !!systemDarkQuery.matches}
@@ -195,7 +226,7 @@ body.theme-light .sheet-head{background:#fff}
         document.body.classList.toggle('car-mode',carMode);
         const wazeTile=document.querySelector('[data-open="waze"]');
         const wazeInstalled=typeof YZMDM!=='undefined'&&typeof YZMDM.isWazeInstalled==='function'?YZMDM.isWazeInstalled():true;
-        const showWaze=carMode&&wazeEnabled&&wazeInstalled;
+        const showWaze=(carMode||layoutMode==='compact')&&wazeEnabled&&wazeInstalled;
         if(wazeTile)wazeTile.hidden=!showWaze;
         document.body.classList.toggle('single-car-app',carMode&&!showWaze);
         orientationModeInitialized=true;
@@ -221,8 +252,9 @@ body.theme-light .sheet-head{background:#fff}
       const statusPref=(icon,title,on)=>'<div class="pref"><span class="pref-icon">'+svg(icon)+'</span><span class="pref-copy"><span class="pref-title">'+title+'</span></span><span class="device-status '+(on?'on':'off')+'">'+(on?'ACTIF':'INACTIF')+'</span></div>';
       const row=(icon,title,sub,id)=>'<button class="sheet-button'+(id==='system'?' system-link':'')+'" data-choice="'+id+'">'+svg(icon)+'<span>'+title+'</span><em>'+sub+'</em>'+svg('chevron')+'</button>';
       const pages={
-        launcher:()=>{return show('Réglages du launcher','<p class="sheet-copy">Personnalisez l’écran d’accueil YiDream.</p>'+pref('rotate','Mode voiture automatique','S’active quand l’écran passe en paysage',true,carModeAutomatic)+pref('map','Afficher Waze','Ajouter le raccourci voiture à l’accueil',true,wazeEnabled)+row('language','Langue de l’application',languageName(),'language')+row('sun','Apparence',appearanceName(),'appearance')+row('refresh','Installer la dernière mise à jour','','update')+row('phone','Choisir YiDream comme écran d’accueil','Demander à Android de définir YiDream','home-role')+row('phone','Retirer le mode appareil dédié','Entrer le code administrateur pour lever les restrictions','release-owner')+row('phone','Paramètres Android','Accès aux réglages du téléphone','system'))},
+        launcher:()=>{return show('Réglages du launcher','<p class="sheet-copy">Personnalisez l’écran d’accueil YiDream.</p>'+pref('rotate','Mode voiture automatique','S’active quand l’écran passe en paysage',true,carModeAutomatic)+pref('map','Afficher Waze','Ajouter le raccourci voiture à l’accueil',true,wazeEnabled)+row('language','Langue de l’application',languageName(),'language')+row('sun','Apparence',appearanceName(),'appearance')+row('phone','Disposition de l’accueil',layoutMode==='compact'?'Compacte':'Actuelle','layout')+row('refresh','Installer la dernière mise à jour','','update')+row('phone','Choisir YiDream comme écran d’accueil','Demander à Android de définir YiDream','home-role')+row('phone','Retirer le mode appareil dédié','Entrer le code administrateur pour lever les restrictions','release-owner')+row('phone','Paramètres Android','Accès aux réglages du téléphone','system'))},
         language:()=>showNested('Langue de l’application','<p class="sheet-copy">Choisissez la langue de YiDream.</p><div class="lang-options language-menu" role="group" aria-label="Langue de l’application">'+languageOptions()+'</div>'),
+        layout:()=>showNested('Disposition de l’accueil','<div class="lang-options" role="group" aria-label="Disposition de l’accueil">'+[['standard','Actuelle'],['compact','Compacte']].map(([mode,label])=>'<button class="lang-option '+(layoutMode===mode?'selected':'')+'" data-layout-choice="'+mode+'" aria-pressed="'+(layoutMode===mode)+'">'+localizedText(label,currentLanguage,'fr')+'</button>').join('')+'</div>'),
         appearance:()=>showNested(localizedText('Apparence',currentLanguage,'fr'),'<p class="sheet-copy">'+localizedText('Choisissez le thème de YZ.',currentLanguage,'fr')+'</p><div class="lang-options theme-options" role="group" aria-label="'+localizedText('Apparence',currentLanguage,'fr')+'">'+themeOptions()+'</div>'),
         bluetooth:()=>show('Bluetooth','<p class="sheet-copy">Raccourci vers les réglages Bluetooth du téléphone.</p><div class="device-list"><button class="device-card" data-choice="scan">'+svg('bluetooth')+'<div><strong>Ouvrir Bluetooth</strong><small>Choisir un casque ou un autoradio</small></div>'+svg('chevron')+'</button><div class="device-card">'+svg('sound')+'<div><strong>Appareils enregistrés</strong><small>Aucun appareil connecté dans cette maquette</small></div></div></div>'),
         'android-settings':()=>show('Paramètres Android','<p class="sheet-copy">Accès aux réglages système autorisés sur cet appareil dédié.</p>'+row('phone','Ouvrir les paramètres','Système','system')+row('bluetooth','Bluetooth','Connexions','scan')+row('sound','Son et volume','Audio','volume')),
@@ -231,6 +263,8 @@ body.theme-light .sheet-head{background:#fff}
         waze:()=>show('Mode voiture','<p class="sheet-copy">Un accès rapide à la navigation, sans intégrer Waze dans le launcher.</p><div class="track-row"><span class="cover" style="background:linear-gradient(145deg,#365047,#242a29)">'+svg('map')+'</span><span class="track-label"><span class="track-title">Waze</span><span class="track-artist">Application facultative</span></span><span class="playing">OPTIONNEL</span></div><div class="sheet-copy" style="margin:13px 0 0">Le raccourci apparaîtra si l’option Waze est choisie à l’installation.</div>')
       };
       document.addEventListener('click',e=>{
+        const layoutChoice=e.target.closest('[data-layout-choice]');if(layoutChoice){e.preventDefault();applyLayout(layoutChoice.dataset.layoutChoice,true);updateOrientationMode();sheetStack.length=0;pages.launcher();pages.layout();return}
+        const layoutLink=e.target.closest('[data-choice="layout"]');if(layoutLink){e.preventDefault();pages.layout();return}
         const mediaCommand=e.target.closest('[data-media-command]');if(mediaCommand){e.preventDefault();if(window.YZMDM&&typeof YZMDM.sendMediaButton==='function')YZMDM.sendMediaButton(mediaCommand.dataset.mediaCommand);else toast('Les commandes audio sont disponibles dans YZ sur Android.');return}
         const backButton=e.target.closest('[data-back]');if(backButton){e.preventDefault();const previous=sheetStack.pop();if(previous!==undefined){panel.innerHTML=previous;sheet.hidden=false;applyLanguage(currentLanguage,panel,'fr',false);panel.querySelector('[data-close]')?.focus()}return}const themeButton=e.target.closest('[data-theme-choice]');if(themeButton){e.preventDefault();applyAppearance(themeButton.dataset.themeChoice,true);sheetStack.length=0;pages.launcher();pages.appearance();return}
         const languageButton=e.target.closest('[data-language]');if(languageButton){e.preventDefault();applyLanguage(languageButton.dataset.language,document.body,currentLanguage,true);if(languageButton.closest('#sheet')&&sheetStack.length){sheetStack.length=0;pages.launcher();pages.language()}return}
