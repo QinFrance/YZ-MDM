@@ -30,6 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
 import android.provider.OpenableColumns
@@ -49,6 +51,8 @@ class MainActivity : Activity() {
     private val localAudioQueue = mutableListOf<Uri>()
     private var localAudioIndex = -1
     private var localPlayer: MediaPlayer? = null
+    private val playerUiHandler = Handler(Looper.getMainLooper())
+    private val playerStateTicker = object : Runnable { override fun run() { publishLocalPlayerState() } }
     companion object {
         private const val REQUEST_LOCAL_AUDIO = 4103
         private const val BUILD_INFO_URL = "https://qinfrance.github.io/YZ-MDM/build-info.json"
@@ -113,6 +117,7 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        playerUiHandler.removeCallbacks(playerStateTicker)
         localPlayer?.release()
         localPlayer = null
         super.onDestroy()
@@ -548,12 +553,20 @@ class MainActivity : Activity() {
 
     private fun publishLocalPlayerState() {
         val web = launcherWebView ?: return
+        val player = localPlayer
+        val playing = runCatching { player?.isPlaying == true }.getOrDefault(false)
+        val duration = runCatching { player?.duration?.toLong() ?: 0L }.getOrDefault(0L)
+        val position = runCatching { player?.currentPosition?.toLong() ?: 0L }.getOrDefault(0L)
         val state = JSONObject()
             .put("title", localAudioQueue.getOrNull(localAudioIndex)?.let(::localTrackTitle) ?: "Musique locale")
             .put("subtitle", if (localAudioQueue.isEmpty()) "Choisir des fichiers audio" else "Musique locale")
-            .put("playing", runCatching { localPlayer?.isPlaying == true }.getOrDefault(false))
+            .put("hasTrack", localAudioQueue.getOrNull(localAudioIndex) != null)
+            .put("playing", playing)
+            .put("progress", if (duration > 0L) position.toDouble() / duration else 0.0)
             .toString()
         web.post { web.evaluateJavascript("window.setLocalPlayerState && window.setLocalPlayerState($state)", null) }
+        playerUiHandler.removeCallbacks(playerStateTicker)
+        if (playing) playerUiHandler.postDelayed(playerStateTicker, 800L)
     }
 
     private fun openBluetoothSettings() {
