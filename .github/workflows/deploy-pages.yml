@@ -1,6 +1,9 @@
 name: Build and publish YZ MDM WebADB
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       force_update:
@@ -29,6 +32,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Configure Java
         uses: actions/setup-java@v4
         with:
@@ -91,13 +96,23 @@ jobs:
             echo "::error::Could not read the Android version from Gradle."
             exit 1
           fi
+          force_update="${{ inputs.force_update }}"
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            previous_version_code="$(git show "${GITHUB_EVENT_BEFORE}:yz-mdm/app/build.gradle.kts" 2>/dev/null | grep -Eo 'versionCode[[:space:]]*=[[:space:]]*[0-9]+' | grep -Eo '[0-9]+' | head -n1 || true)"
+            previous_version_code="${previous_version_code:-0}"
+            if [[ "$version_code" -gt "$previous_version_code" ]]; then
+              force_update=true
+            else
+              force_update=false
+            fi
+          fi
           cat > web-installer/dist/build-info.json <<JSON
           {
             "applicationId": "com.yz.mdm",
             "versionName": "$version_name",
             "versionCode": $version_code,
             "releaseReady": $ready,
-            "forceUpdate": ${{ inputs.force_update }}
+            "forceUpdate": $force_update
           }
           JSON
           touch web-installer/dist/.nojekyll
